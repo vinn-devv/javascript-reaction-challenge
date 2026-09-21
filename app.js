@@ -3,9 +3,15 @@ const gameArea = document.querySelector(".game-area");
 const reactionTime = document.querySelector(".reaction-time");
 const bestScore = document.querySelector(".best-score");
 const target = document.querySelector(".target");
+const savedBest = localStorage.getItem("best");
 
 let startTime;
 let best = null;
+
+if (savedBest !== null) {
+  best = Number(savedBest);
+  bestScore.textContent = best;
+}
 
 startButton.addEventListener("click", () => {
   console.log("Game started!");
@@ -31,5 +37,7 @@ target.addEventListener("click", () => {
   if (best === null || reaction < best) {
     best = reaction;
     bestScore.textContent = best;
+
+    localStorage.setItem("best", best);
   }
 });
