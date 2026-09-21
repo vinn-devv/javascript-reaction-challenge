@@ -3,7 +3,9 @@ const gameArea = document.querySelector(".game-area");
 const reactionTime = document.querySelector(".reaction-time");
 const bestScore = document.querySelector(".best-score");
 const target = document.querySelector(".target");
+
 let startTime;
+let best = null;
 
 startButton.addEventListener("click", () => {
   console.log("Game started!");
@@ -25,4 +27,9 @@ target.addEventListener("click", () => {
 
   const reaction = endTime - startTime;
   reactionTime.textContent = reaction;
+
+  if (best === null || reaction < best) {
+    best = reaction;
+    bestScore.textContent = best;
+  }
 });
