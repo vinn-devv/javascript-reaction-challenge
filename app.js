@@ -23,6 +23,13 @@ startButton.addEventListener("click", () => {
   setTimeout(() => {
     target.style.display = "block";
     startTime = Date.now();
+
+    const randomX = Math.random() * (gameArea.clientWidth - target.offsetWidth);
+    const randomY =
+      Math.random() * (gameArea.clientHeight - target.offsetHeight);
+
+    target.style.left = `${randomX}px`;
+    target.style.top = `${randomY}px`;
   }, delay);
 });
 
