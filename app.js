@@ -7,13 +7,20 @@ const savedBest = localStorage.getItem("best");
 
 let startTime;
 let best = null;
+let isPlaying = false;
 
 if (savedBest !== null) {
   best = Number(savedBest);
-  bestScore.textContent = best;
+  bestScore.textContent = `${best}ms`;
 }
 
 startButton.addEventListener("click", () => {
+  if (isPlaying === true) {
+    return;
+  }
+
+  isPlaying = true;
+
   console.log("Game started!");
 
   target.style.display = "none";
@@ -39,7 +46,7 @@ target.addEventListener("click", () => {
   const endTime = Date.now();
 
   const reaction = endTime - startTime;
-  reactionTime.textContent = reaction;
+  reactionTime.textContent = `${reaction}ms`;
 
   if (best === null || reaction < best) {
     best = reaction;
@@ -47,4 +54,6 @@ target.addEventListener("click", () => {
 
     localStorage.setItem("best", best);
   }
+
+  isPlaying = false;
 });
