@@ -4,12 +4,14 @@ const reactionTime = document.querySelector(".reaction-time");
 const bestScore = document.querySelector(".best-score");
 const target = document.querySelector(".target");
 const gameStatus = document.querySelector(".game-status");
+const roundCounter = document.querySelector(".round-counter");
 const savedBest = localStorage.getItem("best");
 
 let startTime;
 let best = null;
 let isPlaying = false;
 let targetReady = false;
+let round = 0;
 
 if (savedBest !== null) {
   best = Number(savedBest);
@@ -20,6 +22,8 @@ startButton.addEventListener("click", () => {
   if (isPlaying === true) {
     return;
   }
+
+  roundCounter.textContent = `Round: ${++round}`;
 
   reactionTime.textContent = "---";
 
