@@ -3,6 +3,7 @@ const gameArea = document.querySelector(".game-area");
 const reactionTime = document.querySelector(".reaction-time");
 const bestScore = document.querySelector(".best-score");
 const target = document.querySelector(".target");
+const gameStatus = document.querySelector(".game-status");
 const savedBest = localStorage.getItem("best");
 
 let startTime;
@@ -20,6 +21,8 @@ startButton.addEventListener("click", () => {
     return;
   }
 
+  gameStatus.textContent = "Wait for it...";
+
   isPlaying = true;
 
   console.log("Game started!");
@@ -29,6 +32,7 @@ startButton.addEventListener("click", () => {
   const delay = Math.random() * 3000;
 
   setTimeout(() => {
+    gameStatus.textContent = "CLICK!";
     targetReady = true;
     target.style.display = "block";
     startTime = Date.now();
@@ -62,4 +66,5 @@ target.addEventListener("click", () => {
 
   isPlaying = false;
   targetReady = false;
+  gameStatus.textContent = "Ready?";
 });
