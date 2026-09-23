@@ -8,6 +8,7 @@ const savedBest = localStorage.getItem("best");
 let startTime;
 let best = null;
 let isPlaying = false;
+let targetReady = false;
 
 if (savedBest !== null) {
   best = Number(savedBest);
@@ -54,7 +55,7 @@ target.addEventListener("click", () => {
 
   if (best === null || reaction < best) {
     best = reaction;
-    bestScore.textContent = best;
+    bestScore.textContent = `${best}ms`;
 
     localStorage.setItem("best", best);
   }
