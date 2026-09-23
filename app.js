@@ -28,6 +28,7 @@ startButton.addEventListener("click", () => {
   const delay = Math.random() * 3000;
 
   setTimeout(() => {
+    targetReady = true;
     target.style.display = "block";
     startTime = Date.now();
 
@@ -41,6 +42,9 @@ startButton.addEventListener("click", () => {
 });
 
 target.addEventListener("click", () => {
+  if (!targetReady) {
+    return;
+  }
   target.style.display = "none";
 
   const endTime = Date.now();
@@ -56,4 +60,5 @@ target.addEventListener("click", () => {
   }
 
   isPlaying = false;
+  targetReady = false;
 });
