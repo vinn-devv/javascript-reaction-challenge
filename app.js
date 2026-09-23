@@ -21,6 +21,8 @@ startButton.addEventListener("click", () => {
     return;
   }
 
+  reactionTime.textContent = "---";
+
   gameStatus.textContent = "Wait for it...";
 
   isPlaying = true;
