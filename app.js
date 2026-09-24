@@ -94,7 +94,7 @@ if (playButton) {
 
   if (isReturning) {
     homeScreen.style.display = "none";
-    loadingScreen.style.display = "block";
+    loadingScreen.style.display = "flex";
 
     setTimeout(() => {
       loadingScreen.style.display = "none";
@@ -105,7 +105,7 @@ if (playButton) {
   playButton.addEventListener("click", () => {
     homeScreen.style.display = "none";
 
-    loadingScreen.style.display = "block";
+    loadingScreen.style.display = "flex";
 
     setTimeout(() => {
       window.location.href = "index.html";
