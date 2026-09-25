@@ -13,9 +13,6 @@ const homeButton = document.querySelector(".home-btn");
 
 const mouseGlow = document.querySelector(".mouse-glow");
 
-/* Chroma-key the cat video onto a canvas so the black background is
-   really transparent, in every browser, regardless of codec alpha support. */
-
 const catCanvas = document.querySelector(".cat-gif");
 const catSource = document.querySelector(".cat-source");
 
@@ -24,8 +21,8 @@ if (catCanvas && catSource) {
   const cw = catCanvas.width;
   const ch = catCanvas.height;
 
-  const BLACK_CUTOFF = 40; // fully transparent below this brightness
-  const FEATHER_CUTOFF = 75; // soft edge up to this brightness
+  const BLACK_CUTOFF = 40;
+  const FEATHER_CUTOFF = 75;
 
   const renderCatFrame = () => {
     if (catSource.readyState >= 2) {
@@ -57,8 +54,6 @@ if (catCanvas && catSource) {
 
   requestAnimationFrame(renderCatFrame);
 }
-
-/* Meow sound */
 
 const meowSound = new Audio("meow.mp3");
 meowSound.preload = "auto";
@@ -96,9 +91,9 @@ let startTime;
 let best = null;
 let isPlaying = false;
 let targetReady = false;
-let round = 0;
 
-/* Mouse Glow */
+let round = 0;
+const TOTAL_ROUNDS = 5;
 
 if (mouseGlow) {
   let targetX = window.innerWidth / 2;
@@ -125,8 +120,6 @@ if (mouseGlow) {
   requestAnimationFrame(followCursor);
 }
 
-/* Game */
-
 if (startButton) {
   if (savedBest !== null) {
     best = Number(savedBest);
@@ -138,7 +131,12 @@ if (startButton) {
       return;
     }
 
-    roundCounter.textContent = `Round ${String(++round).padStart(2, "0")}`;
+    if (round >= TOTAL_ROUNDS) {
+      round = 0;
+    }
+
+    round++;
+    roundCounter.textContent = `Round ${String(round).padStart(2, "0")}`;
 
     reactionTime.textContent = "---";
 
@@ -199,22 +197,25 @@ if (startButton) {
     }
 
     isPlaying = false;
-
     targetReady = false;
 
-    gameStatus.textContent = "Ready to pounce?";
+    if (round < TOTAL_ROUNDS) {
+      gameStatus.textContent = "Round complete! Get ready...";
+
+      setTimeout(() => {
+        startButton.click();
+      }, 2000);
+    } else {
+      gameStatus.textContent = "5 rounds complete!";
+    }
   });
 }
-
-/* Home Button */
 
 if (homeButton) {
   homeButton.addEventListener("click", () => {
     window.location.href = "homescreen.html?loading=true";
   });
 }
-
-/* Home Screen / Loading */
 
 if (playButton) {
   const urlParams = new URLSearchParams(window.location.search);

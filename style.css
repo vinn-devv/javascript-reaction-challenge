@@ -78,8 +78,6 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
-/* Paw print decoration, reused around the UI */
-
 .paw {
   position: absolute;
   opacity: 0.5;
@@ -112,8 +110,6 @@ button:focus-visible {
     13px -3px 0 0 currentColor;
 }
 
-/* Panel */
-
 .game-container {
   width: 540px;
   max-width: 92%;
@@ -130,8 +126,6 @@ button:focus-visible {
   position: relative;
   z-index: 1;
 }
-
-/* Home screen */
 
 .home-screen {
   text-align: center;
@@ -192,8 +186,6 @@ button:focus-visible {
   color: var(--pink);
 }
 
-/* Game screen header */
-
 .game-header {
   display: flex;
   align-items: center;
@@ -232,8 +224,6 @@ button:focus-visible {
   color: var(--text-muted);
 }
 
-/* Stats */
-
 .stat-row {
   display: flex;
   gap: 12px;
@@ -268,8 +258,6 @@ button:focus-visible {
 .stat-block.is-best .stat-value {
   color: var(--pink);
 }
-
-/* Game area */
 
 .game-area {
   position: relative;
@@ -311,8 +299,6 @@ button:focus-visible {
     opacity: 1;
   }
 }
-
-/* Target: the cat gif itself, no frame around it */
 
 .target {
   display: block;
@@ -377,8 +363,6 @@ button:focus-visible {
   }
 }
 
-/* Start button */
-
 .start-btn {
   display: block;
   width: 100%;
@@ -409,8 +393,6 @@ button:focus-visible {
 .start-btn:active {
   transform: translateY(2px);
 }
-
-/* Mouse reticle -> tiny paw print that follows the cursor */
 
 .mouse-glow {
   position: fixed;
@@ -454,8 +436,6 @@ button:focus-visible {
     3.5px -3px 0 0 currentColor,
     11.5px -2.6px 0 0 currentColor;
 }
-
-/* Loading screen */
 
 #game-loading {
   display: none;
@@ -502,8 +482,6 @@ button:focus-visible {
     transform: rotate(360deg);
   }
 }
-
-/* Responsive */
 
 @media (max-width: 480px) {
   .game-container {
