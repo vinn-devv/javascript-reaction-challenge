@@ -10,6 +10,13 @@ const playButton = document.querySelector(".play-btn");
 const homeScreen = document.querySelector(".home-screen");
 const loadingScreen = document.querySelector("#game-loading");
 const homeButton = document.querySelector(".home-btn");
+const resultsScreen = document.querySelector("#results-screen");
+const averageScore = document.querySelector("#average-score");
+const fastestScore = document.querySelector("#fastest-score");
+const resultBestScore = document.querySelector("#result-best-score");
+
+const playAgainButton = document.querySelector("#play-again-btn");
+const resultsHomeButton = document.querySelector("#results-home-btn");
 
 const mouseGlow = document.querySelector(".mouse-glow");
 
@@ -94,6 +101,7 @@ let targetReady = false;
 
 let round = 0;
 const TOTAL_ROUNDS = 5;
+let reactionTimes = [];
 
 if (mouseGlow) {
   let targetX = window.innerWidth / 2;
@@ -186,6 +194,8 @@ if (startButton) {
 
     const reaction = endTime - startTime;
 
+    reactionTimes.push(reaction);
+
     reactionTime.textContent = `${reaction}ms`;
 
     if (best === null || reaction < best) {
@@ -204,11 +214,28 @@ if (startButton) {
 
       setTimeout(() => {
         startButton.click();
-      }, 2000);
+      }, 800);
     } else {
       gameStatus.textContent = "5 rounds complete!";
+
+      setTimeout(() => {
+        showResults();
+      }, 700);
     }
   });
+}
+
+function showResults() {
+  const total = reactionTimes.reduce((sum, time) => sum + time, 0);
+
+  const average = Math.round(total / reactionTimes.length);
+  const fastest = Math.min(...reactionTimes);
+
+  averageScore.textContent = `${average}ms`;
+  fastestScore.textContent = `${fastest}ms`;
+  resultBestScore.textContent = `${best}ms`;
+
+  resultsScreen.style.display = "flex";
 }
 
 if (homeButton) {
@@ -242,5 +269,25 @@ if (playButton) {
     setTimeout(() => {
       window.location.href = "index.html";
     }, 1200);
+  });
+}
+
+if (playAgainButton) {
+  playAgainButton.addEventListener("click", () => {
+    reactionTimes = [];
+    round = 0;
+
+    resultsScreen.style.display = "none";
+
+    reactionTime.textContent = "---";
+    gameStatus.textContent = "Ready to pounce?";
+
+    startButton.click();
+  });
+}
+
+if (resultsHomeButton) {
+  resultsHomeButton.addEventListener("click", () => {
+    window.location.href = "homescreen.html?loading=true";
   });
 }
