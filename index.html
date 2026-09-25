@@ -3,30 +3,51 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <title>Reaction Challenge</title>
-
+    <title>Paw Reflex</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Quicksand:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="style.css" />
   </head>
 
   <body>
-    <main class="game-container">
-      <h1>Reaction Challenge</h1>
-      <button class="home-btn">Home</button>
+    <div class="mouse-glow"></div>
 
-      <button class="start-btn">Start Game</button>
+    <main class="game-container">
+      <header class="game-header">
+        <button class="home-btn">Home</button>
+        <span class="round-counter">Round 00</span>
+      </header>
+
+      <div class="stat-row">
+        <div class="stat-block">
+          <span class="stat-label">Last</span>
+          <span class="reaction-time stat-value">—</span>
+        </div>
+
+        <div class="stat-block is-best">
+          <span class="stat-label">Best</span>
+          <span class="best-score stat-value">—</span>
+        </div>
+      </div>
 
       <div class="game-area">
-        <button class="target">CLICK ME!</button>
+        <button class="target" aria-label="Click the cat">
+          <canvas class="cat-gif" width="222" height="288"></canvas>
+          <video class="cat-source" autoplay loop muted playsinline>
+            <source src="scuba_Cat-nobg.webm" type="video/webm" />
+            <source src="scuba_Cat.mp4" type="video/mp4" />
+          </video>
+        </button>
+        <p class="game-status">Ready to pounce?</p>
       </div>
 
-        <p class="game-status">Ready?</p>
-        <p class="round-counter">Round: 0</p>
-        <p>Reaction: <span class="reaction-time">0ms</span></p>
-        <p>Best: <span class="best-score">0ms</span></p>
-      </div>
+      <button class="start-btn">Release the cat</button>
+    </main>
 
     <script src="app.js"></script>
   </body>
 </html>
-
