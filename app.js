@@ -103,6 +103,38 @@ let round = 0;
 const TOTAL_ROUNDS = 5;
 let reactionTimes = [];
 
+const difficulty = {
+  1: {
+    minDelay: 1000,
+    maxDelay: 3000,
+    catSize: 96,
+  },
+
+  2: {
+    minDelay: 800,
+    maxDelay: 2500,
+    catSize: 92,
+  },
+
+  3: {
+    minDelay: 600,
+    maxDelay: 2000,
+    catSize: 88,
+  },
+
+  4: {
+    minDelay: 400,
+    maxDelay: 1500,
+    catSize: 84,
+  },
+
+  5: {
+    minDelay: 250,
+    maxDelay: 1000,
+    catSize: 78,
+  },
+};
+
 if (mouseGlow) {
   let targetX = window.innerWidth / 2;
   let targetY = window.innerHeight / 2;
@@ -148,7 +180,10 @@ if (startButton) {
 
     reactionTime.textContent = "---";
 
-    gameStatus.textContent = "Waiting for kitty...";
+    gameStatus.textContent =
+      round === 1
+        ? "Warm up your paws..."
+        : `Difficulty ${round}/5 — stay sharp...`;
 
     isPlaying = true;
 
@@ -156,7 +191,13 @@ if (startButton) {
 
     target.classList.remove("is-visible");
 
-    const delay = Math.random() * 3000;
+    const currentDifficulty = difficulty[round];
+
+    target.style.width = `${currentDifficulty.catSize}px`;
+
+    const delay =
+      currentDifficulty.minDelay +
+      Math.random() * (currentDifficulty.maxDelay - currentDifficulty.minDelay);
 
     setTimeout(() => {
       gameStatus.textContent = "POUNCE!";
