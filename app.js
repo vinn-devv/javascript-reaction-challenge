@@ -99,7 +99,7 @@ if (playButton) {
     setTimeout(() => {
       loadingScreen.style.display = "none";
       homeScreen.style.display = "block";
-    }, 1000);
+    }, 1200);
   }
 
   playButton.addEventListener("click", () => {
@@ -109,6 +109,6 @@ if (playButton) {
 
     setTimeout(() => {
       window.location.href = "index.html";
-    }, 1000);
+    }, 2500);
   });
 }
