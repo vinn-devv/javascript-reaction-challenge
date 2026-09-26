@@ -92,6 +92,10 @@ const meowSound = new Audio("assets/meow.mp3");
 meowSound.preload = "auto";
 meowSound.loop = true;
 
+const resultSound = new Audio();
+resultSound.volume = 0.5;
+resultSound.preload = "auto";
+
 function playMeow() {
   try {
     meowSound.currentTime = 0;
@@ -247,7 +251,7 @@ if (startButton) {
       Math.random() * (currentDifficulty.maxDelay - currentDifficulty.minDelay);
 
     setTimeout(() => {
-      gameStatus.textContent = "POUNCE!";
+      gameStatus.textContent = "GO!";
 
       targetReady = true;
 
@@ -315,10 +319,7 @@ if (startButton) {
       }, 800);
     } else {
       gameStatus.textContent = "5 rounds complete!";
-
-      setTimeout(() => {
-        showResults();
-      }, 700);
+      showResults();
     }
   });
 }
@@ -348,16 +349,26 @@ function updateResultReaction(average) {
     return;
   }
 
-  if (average < 500) {
+  resultSound.pause();
+  resultSound.currentTime = 0;
+
+  if (average < 400) {
     resultGif.src = "assets/Cat Meme GIF.gif";
     resultTitle.textContent = "I see, you have fast hands.";
+    resultSound.src = "assets/dexter-meme.mp3";
   } else if (average <= 700) {
     resultGif.src = "assets/Happy Cat GIF.gif";
     resultTitle.textContent = "Absolute nyan! Nice!";
+    resultSound.src = "assets/happy-cat.mp3";
   } else {
     resultGif.src = "assets/Lemme Think GIF.gif";
     resultTitle.textContent = "Is this you?";
+    resultSound.src = "assets/loading-meme.mp3";
   }
+
+  resultSound.play().catch((error) => {
+    console.log("Result sound failed:", error);
+  });
 }
 
 function showResults() {
