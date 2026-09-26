@@ -430,6 +430,6 @@ if (playAgainButton) {
 
 if (resultsHomeButton) {
   resultsHomeButton.addEventListener("click", () => {
-    window.location.href = "homescreen.html?loading=true";
+    window.location.href = "index.html";
   });
 }
