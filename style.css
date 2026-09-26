@@ -3081,3 +3081,20 @@ button:focus-visible {
     transform: translateY(0);
   }
 }
+
+.result-reaction {
+  width: 180px;
+  height: 150px;
+
+  margin: 0 auto 18px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#result-gif {
+  width: 180px;
+  height: 150px;
+  object-fit: contain;
+}

@@ -44,8 +44,8 @@
         <button class="target" aria-label="Click the cat">
           <canvas class="cat-gif" width="222" height="288"></canvas>
           <video class="cat-source" autoplay loop muted playsinline>
-            <source src="scuba_Cat-nobg.webm" type="video/webm" />
-            <source src="scuba_Cat.mp4" type="video/mp4" />
+            <source src="assets/scuba_Cat-nobg.webm" type="video/webm" />
+            <source src="assets/scuba_Cat.mp4" type="video/mp4" />
           </video>
         </button>
         <p class="game-status">Ready to pounce?</p>
@@ -60,7 +60,11 @@
       <div class="results-card">
         <p class="results-label">GAME COMPLETE</p>
 
-        <h1>Nice pounce!</h1>
+        <div class="result-reaction">
+          <img id="result-gif" src="" alt="Cat reaction" />
+        </div>
+
+        <h1 id="result-title"></h1>
 
         <div class="results-stats">
           <div class="result-stat">

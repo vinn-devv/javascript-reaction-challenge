@@ -15,6 +15,9 @@ const averageScore = document.querySelector("#average-score");
 const fastestScore = document.querySelector("#fastest-score");
 const resultBestScore = document.querySelector("#result-best-score");
 
+const resultGif = document.querySelector("#result-gif");
+const resultTitle = document.querySelector("#result-title");
+
 const playAgainButton = document.querySelector("#play-again-btn");
 const resultsHomeButton = document.querySelector("#results-home-btn");
 const homeMusic = document.querySelector("#home-music");
@@ -85,7 +88,7 @@ if (catCanvas && catSource) {
   });
 }
 
-const meowSound = new Audio("meow.mp3");
+const meowSound = new Audio("assets/meow.mp3");
 meowSound.preload = "auto";
 meowSound.loop = true;
 
@@ -340,11 +343,30 @@ function countUpTo(el, endValue, duration = 600) {
   requestAnimationFrame(tick);
 }
 
+function updateResultReaction(average) {
+  if (!resultGif || !resultTitle) {
+    return;
+  }
+
+  if (average < 500) {
+    resultGif.src = "assets/Cat Meme GIF.gif";
+    resultTitle.textContent = "I see, you have fast hands.";
+  } else if (average <= 700) {
+    resultGif.src = "assets/Happy Cat GIF.gif";
+    resultTitle.textContent = "Absolute nyan! Nice!";
+  } else {
+    resultGif.src = "assets/Lemme Think GIF.gif";
+    resultTitle.textContent = "Is this you?";
+  }
+}
+
 function showResults() {
   const total = reactionTimes.reduce((sum, time) => sum + time, 0);
 
   const average = Math.round(total / reactionTimes.length);
   const fastest = Math.min(...reactionTimes);
+
+  updateResultReaction(average);
 
   resultsScreen.style.display = "flex";
 
