@@ -17,11 +17,24 @@ const resultBestScore = document.querySelector("#result-best-score");
 
 const playAgainButton = document.querySelector("#play-again-btn");
 const resultsHomeButton = document.querySelector("#results-home-btn");
+const homeMusic = document.querySelector("#home-music");
 
 const mouseGlow = document.querySelector(".mouse-glow");
 
 const catCanvas = document.querySelector(".cat-gif");
 const catSource = document.querySelector(".cat-source");
+
+function playHomeMusic() {
+  if (!homeMusic) {
+    return;
+  }
+
+  homeMusic.volume = 0.01;
+
+  homeMusic.play().catch(() => {
+    console.log("Autoplay was blocked by the browser.");
+  });
+}
 
 if (catCanvas && catSource) {
   const ctx = catCanvas.getContext("2d", { willReadFrequently: true });
@@ -348,29 +361,34 @@ if (homeButton) {
 
 if (playButton) {
   const urlParams = new URLSearchParams(window.location.search);
-
   const isReturning = urlParams.get("loading") === "true";
 
   if (isReturning) {
     homeScreen.style.display = "none";
-
     loadingScreen.style.display = "flex";
 
     setTimeout(() => {
       loadingScreen.style.display = "none";
-
       homeScreen.style.display = "block";
+
+      playHomeMusic();
     }, 1200);
+  } else {
+    playHomeMusic();
   }
 
   playButton.addEventListener("click", () => {
-    homeScreen.style.display = "none";
+    if (homeMusic) {
+      homeMusic.pause();
+      homeMusic.currentTime = 0;
+    }
 
+    homeScreen.style.display = "none";
     loadingScreen.style.display = "flex";
 
     setTimeout(() => {
       window.location.href = "index.html";
-    }, 2000);
+    }, 1200);
   });
 }
 
