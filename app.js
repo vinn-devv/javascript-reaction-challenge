@@ -32,7 +32,7 @@ if (catCanvas && catSource) {
   const FEATHER_CUTOFF = 75;
 
   const renderCatFrame = () => {
-    if (catSource.readyState >= 2) {
+    if (catSource.readyState >= 2 && !catSource.paused) {
       ctx.drawImage(catSource, 0, 0, cw, ch);
 
       const frame = ctx.getImageData(0, 0, cw, ch);
@@ -55,11 +55,21 @@ if (catCanvas && catSource) {
 
       ctx.putImageData(frame, 0, 0);
     }
-
-    requestAnimationFrame(renderCatFrame);
   };
 
-  requestAnimationFrame(renderCatFrame);
+  const updateCatFrame = () => {
+    renderCatFrame();
+
+    if ("requestVideoFrameCallback" in HTMLVideoElement.prototype) {
+      catSource.requestVideoFrameCallback(updateCatFrame);
+    } else {
+      requestAnimationFrame(updateCatFrame);
+    }
+  };
+
+  catSource.addEventListener("playing", () => {
+    updateCatFrame();
+  });
 }
 
 const meowSound = new Audio("meow.mp3");
@@ -102,6 +112,26 @@ let targetReady = false;
 let round = 0;
 const TOTAL_ROUNDS = 5;
 let reactionTimes = [];
+
+const roundDotsEl = document.querySelector(".round-dots");
+let roundDots = [];
+
+if (roundDotsEl) {
+  for (let i = 0; i < TOTAL_ROUNDS; i++) {
+    const dot = document.createElement("span");
+    dot.className = "dot";
+    roundDotsEl.appendChild(dot);
+    roundDots.push(dot);
+  }
+}
+
+function updateRoundDots(currentRound) {
+  roundDots.forEach((dot, i) => {
+    const dotRound = i + 1;
+    dot.classList.toggle("is-done", dotRound < currentRound);
+    dot.classList.toggle("is-current", dotRound === currentRound);
+  });
+}
 
 const difficulty = {
   1: {
@@ -177,6 +207,7 @@ if (startButton) {
 
     round++;
     roundCounter.textContent = `Round ${String(round).padStart(2, "0")}`;
+    updateRoundDots(round);
 
     reactionTime.textContent = "---";
 
@@ -227,6 +258,16 @@ if (startButton) {
       return;
     }
 
+    const hitX = target.offsetLeft + target.offsetWidth / 2;
+    const hitY = target.offsetTop + target.offsetHeight / 2;
+
+    gameArea.style.setProperty("--hit-x", `${hitX}px`);
+    gameArea.style.setProperty("--hit-y", `${hitY}px`);
+
+    gameArea.classList.remove("is-hit");
+    void gameArea.offsetWidth;
+    gameArea.classList.add("is-hit");
+
     target.classList.remove("is-visible");
 
     stopMeow();
@@ -266,17 +307,37 @@ if (startButton) {
   });
 }
 
+function countUpTo(el, endValue, duration = 600) {
+  const startTime = performance.now();
+
+  const tick = (now) => {
+    const progress = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const value = Math.round(endValue * eased);
+
+    el.textContent = `${value}ms`;
+
+    if (progress < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      el.textContent = `${endValue}ms`;
+    }
+  };
+
+  requestAnimationFrame(tick);
+}
+
 function showResults() {
   const total = reactionTimes.reduce((sum, time) => sum + time, 0);
 
   const average = Math.round(total / reactionTimes.length);
   const fastest = Math.min(...reactionTimes);
 
-  averageScore.textContent = `${average}ms`;
-  fastestScore.textContent = `${fastest}ms`;
-  resultBestScore.textContent = `${best}ms`;
-
   resultsScreen.style.display = "flex";
+
+  countUpTo(averageScore, average);
+  countUpTo(fastestScore, fastest);
+  countUpTo(resultBestScore, best);
 }
 
 if (homeButton) {
@@ -309,7 +370,7 @@ if (playButton) {
 
     setTimeout(() => {
       window.location.href = "index.html";
-    }, 1200);
+    }, 2000);
   });
 }
 

@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Quicksand:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
@@ -15,6 +15,13 @@
 
   <body>
     <div class="mouse-glow"></div>
+
+    <div class="container">
+      <div id="stars"></div>
+      <div id="stars2"></div>
+      <div id="stars3"></div>
+      <div></div>
+    </div>
 
     <main class="game-container">
       <section class="home-screen">
@@ -28,6 +35,7 @@
           "
           aria-hidden="true"
         ></span>
+
         <span
           class="paw"
           style="
@@ -38,22 +46,39 @@
           "
           aria-hidden="true"
         ></span>
+
         <h1>Paw Reflex</h1>
+
         <p class="tagline">Pounce on the cat before it wanders off.</p>
 
-        <button class="play-btn">Enter</button>
+        <button class="play-btn">Play now</button>
 
         <p class="home-best-row">
           Fastest pounce <span class="home-best">—</span>
         </p>
       </section>
-
-      <div id="game-loading">
-        <div class="loading-logo">Paw Reflex</div>
-        <div class="loading-yarn" aria-hidden="true"></div>
-        <div class="loading-text">Warming up paws</div>
-      </div>
     </main>
+
+    <!-- LOADING SCREEN IS NOW OUTSIDE GAME-CONTAINER -->
+    <div id="game-loading">
+      <div class="loading-den">
+        <img
+          class="loading-gif"
+          src="https://media.tenor.com/aH6qp6K6lO4AAAAm/apple-apple-cat.webp"
+          alt=""
+          aria-hidden="true"
+        />
+      </div>
+
+      <div class="loading-logo">Paw Reflex</div>
+
+      <div class="loading-bar">
+        <span></span>
+      </div>
+
+      <div class="loading-text">Warming up paws</div>
+    </div>
+
     <section id="results-screen">
       <div class="results-card">
         <p class="results-label">GAME COMPLETE</p>
@@ -78,7 +103,6 @@
         </div>
 
         <button id="play-again-btn">Play Again</button>
-
         <button id="results-home-btn">Home</button>
       </div>
     </section>
