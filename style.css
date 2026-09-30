@@ -3800,3 +3800,158 @@ body.is-paused .combo-badge {
     font-size: 12px;
   }
 }
+
+#results-screen {
+  overflow-y: auto;
+}
+
+.results-card {
+  margin: auto;
+}
+
+.results-card > * {
+  animation: resultsRise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.results-card > :nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.results-card > :nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.results-card > :nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.results-card > :nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+.results-card > :nth-child(5) {
+  animation-delay: 0.42s;
+}
+
+.results-card > :nth-child(6) {
+  animation-delay: 0.54s;
+}
+
+.results-card > :nth-child(7) {
+  animation-delay: 0.66s;
+}
+
+.results-card > :nth-child(8) {
+  animation-delay: 0.74s;
+}
+
+@keyframes resultsRise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.round-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  margin-bottom: 28px;
+  padding: 14px 14px 12px;
+
+  text-align: left;
+
+  background: rgba(168, 85, 247, 0.03);
+  border: 1px dashed var(--border-hair-strong);
+  border-radius: 12px;
+}
+
+.breakdown-row {
+  --bar-color: var(--signal);
+
+  display: grid;
+  grid-template-columns: 26px 1fr 62px;
+  align-items: center;
+  gap: 10px;
+
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.breakdown-row.is-lightning {
+  --bar-color: var(--pink);
+}
+
+.breakdown-row.is-fast {
+  --bar-color: var(--signal-strong);
+}
+
+.breakdown-row.is-good {
+  --bar-color: var(--signal);
+}
+
+.breakdown-row.is-okay {
+  --bar-color: #8b5cf6;
+}
+
+.breakdown-row.is-slow {
+  --bar-color: rgb(251, 113, 133);
+}
+
+.breakdown-label {
+  color: var(--text-faint);
+}
+
+.breakdown-track {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.breakdown-bar {
+  width: var(--w);
+  height: 100%;
+  border-radius: 4px;
+  background: var(--bar-color);
+  box-shadow: 0 0 8px var(--bar-color);
+
+  animation: breakdownGrow 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(0.85s + var(--i, 0) * 0.09s);
+}
+
+.breakdown-time {
+  text-align: right;
+  color: var(--text-muted);
+}
+
+.breakdown-row.is-fastest .breakdown-time {
+  color: var(--pink);
+}
+
+@keyframes breakdownGrow {
+  from {
+    width: 0;
+  }
+
+  to {
+    width: var(--w);
+  }
+}
+
+@media (max-width: 480px) {
+  .round-breakdown {
+    padding: 12px 10px 10px;
+  }
+
+  .breakdown-row {
+    grid-template-columns: 22px 1fr 56px;
+    gap: 8px;
+  }
+}

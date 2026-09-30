@@ -37,6 +37,7 @@ const comboBadge = document.querySelector(".combo-badge");
 const comboCount = document.querySelector(".combo-count");
 const comboMultiplier = document.querySelector(".combo-multiplier");
 const resultStreak = document.querySelector("#result-streak");
+const roundBreakdown = document.querySelector(".round-breakdown");
 
 const difficultyEl = document.querySelector(".difficulty");
 const difficultyName = document.querySelector(".difficulty-name");
@@ -845,6 +846,49 @@ function updateResultReaction(average) {
   });
 }
 
+function renderBreakdown() {
+  if (!roundBreakdown) {
+    return;
+  }
+
+  roundBreakdown.textContent = "";
+
+  const fastest = Math.min(...reactionTimes);
+  const scale = Math.max(...reactionTimes, 500);
+
+  reactionTimes.forEach((reaction, i) => {
+    const row = document.createElement("div");
+
+    row.className = `breakdown-row is-${getRating(reaction).tier}`;
+
+    if (reaction === fastest) {
+      row.classList.add("is-fastest");
+    }
+
+    row.style.setProperty("--i", i);
+
+    const label = document.createElement("span");
+    label.className = "breakdown-label";
+    label.textContent = `R${i + 1}`;
+
+    const track = document.createElement("div");
+    track.className = "breakdown-track";
+
+    const bar = document.createElement("div");
+    bar.className = "breakdown-bar";
+    bar.style.setProperty("--w", `${Math.max((reaction / scale) * 100, 6)}%`);
+
+    track.appendChild(bar);
+
+    const time = document.createElement("span");
+    time.className = "breakdown-time";
+    time.textContent = `${reaction}ms`;
+
+    row.append(label, track, time);
+    roundBreakdown.appendChild(row);
+  });
+}
+
 function showResults() {
   const total = reactionTimes.reduce((sum, time) => sum + time, 0);
 
@@ -856,7 +900,13 @@ function showResults() {
 
   updateResultReaction(average);
 
+  renderBreakdown();
+
   resultsScreen.style.display = "flex";
+
+  if (playAgainButton) {
+    playAgainButton.focus();
+  }
 
   if (resultStreak) {
     resultStreak.textContent = maxCombo;
