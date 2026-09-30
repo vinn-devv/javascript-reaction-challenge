@@ -30,6 +30,9 @@ const mouseGlow = document.querySelector(".mouse-glow");
 const catCanvas = document.querySelector(".cat-gif");
 const catSource = document.querySelector(".cat-source");
 
+const scoreValue = document.querySelector(".score-value");
+const finalScore = document.querySelector("#final-score");
+
 /* ---------- Home music + sound button ---------- */
 
 function playHomeMusic() {
@@ -209,6 +212,7 @@ let targetReady = false;
 let round = 0;
 const TOTAL_ROUNDS = 5;
 let reactionTimes = [];
+let score = 0;
 
 const roundDotsEl = document.querySelector(".round-dots");
 let roundDots = [];
@@ -266,6 +270,99 @@ const difficulty = {
   },
 };
 
+/* ---------- Scoring + performance feedback ---------- */
+
+// Ratings line up with the results-screen thresholds (500ms / 700ms)
+const RATINGS = [
+  { max: 250, label: "LIGHTNING!", tier: "lightning" },
+  { max: 350, label: "FAST!", tier: "fast" },
+  { max: 500, label: "GOOD", tier: "good" },
+  { max: 700, label: "OKAY", tier: "okay" },
+  { max: Infinity, label: "SLOW", tier: "slow" },
+];
+
+const MAX_POINTS_PER_ROUND = 200;
+
+function getRating(reaction) {
+  const rating = RATINGS.find((r) => reaction < r.max);
+
+  // 1000ms or slower = 0 pts, every 5ms faster = +1 pt
+  const points = Math.max(
+    0,
+    Math.min(MAX_POINTS_PER_ROUND, Math.round((1000 - reaction) / 5)),
+  );
+
+  return { ...rating, points };
+}
+
+function resetRun() {
+  round = 0;
+  reactionTimes = [];
+  score = 0;
+
+  if (scoreValue) {
+    scoreValue.textContent = "0";
+  }
+}
+
+function addScore(points) {
+  const from = score;
+
+  score += points;
+
+  if (!scoreValue) {
+    return;
+  }
+
+  countUpTo(scoreValue, score, 400, "", from);
+
+  scoreValue.classList.remove("is-bump");
+
+  void scoreValue.offsetWidth;
+
+  scoreValue.classList.add("is-bump");
+}
+
+function showHitFeedback(rating, x, y) {
+  const el = document.createElement("div");
+
+  el.className = `hit-feedback is-${rating.tier}`;
+
+  const label = document.createElement("span");
+  label.className = "hit-feedback-label";
+  label.textContent = rating.label;
+
+  const points = document.createElement("span");
+  points.className = "hit-feedback-points";
+  points.textContent = `+${rating.points}`;
+
+  el.append(label, points);
+
+  // Keep the popup inside the game area even if the cat is near an edge
+  const marginX = 70;
+  const marginY = 50;
+
+  const clampedX = Math.min(
+    Math.max(x, marginX),
+    gameArea.clientWidth - marginX,
+  );
+
+  const clampedY = Math.min(
+    Math.max(y, marginY),
+    gameArea.clientHeight - marginY,
+  );
+
+  el.style.left = `${clampedX}px`;
+  el.style.top = `${clampedY}px`;
+
+  gameArea.appendChild(el);
+
+  el.addEventListener("animationend", () => el.remove());
+
+  // Fallback in case animations are disabled
+  setTimeout(() => el.remove(), 1200);
+}
+
 /* ---------- Mouse glow ---------- */
 
 if (mouseGlow) {
@@ -296,26 +393,88 @@ if (mouseGlow) {
 
 /* ---------- Game ---------- */
 
+/* ---------- Countdown ---------- */
+
+const COUNTDOWN_STEP_MS = 900; // how long each of 3 / 2 / 1 stays on screen
+const COUNTDOWN_GO_MS = 700; // how long "GO!" stays on screen
+const ROUND_INTRO_MS = 800; // "ROUND N" flash for rounds 2-5
+const FULL_COUNTDOWN_EVERY_ROUND = false; // true = 3-2-1-GO! before every round
+
+let countdownText = null;
+
+if (gameArea) {
+  const countdownOverlay = document.createElement("div");
+
+  countdownOverlay.className = "countdown-overlay";
+  countdownOverlay.setAttribute("aria-hidden", "true");
+
+  countdownText = document.createElement("span");
+  countdownText.className = "countdown-text";
+
+  countdownOverlay.appendChild(countdownText);
+  gameArea.appendChild(countdownOverlay);
+}
+
+function showCountdownStep(text, variant = "") {
+  // Reset classes and force a reflow so the pop animation restarts each step
+  countdownText.className = "countdown-text";
+  countdownText.textContent = text;
+
+  void countdownText.offsetWidth;
+
+  countdownText.classList.add("is-pop");
+
+  if (variant) {
+    countdownText.classList.add(variant);
+  }
+}
+
+function hideCountdown() {
+  gameArea.classList.remove("is-counting");
+
+  countdownText.className = "countdown-text";
+  countdownText.textContent = "";
+}
+
 function startCountdown(callback) {
+  gameArea.classList.add("is-counting");
+
+  // Rounds 2-5 get a quick "ROUND N" beat instead of a full 3-2-1
+  if (round > 1 && !FULL_COUNTDOWN_EVERY_ROUND) {
+    showCountdownStep(`ROUND ${round}`, "is-round");
+
+    setTimeout(() => {
+      hideCountdown();
+      callback();
+    }, ROUND_INTRO_MS);
+
+    return;
+  }
+
   let count = 3;
 
-  gameStatus.classList.add("countdown");
-  gameStatus.textContent = count;
+  showCountdownStep(count);
 
   const countdown = setInterval(() => {
     count--;
 
     if (count > 0) {
-      gameStatus.textContent = count;
-    } else {
-      clearInterval(countdown);
-      gameStatus.classList.remove("countdown");
-      callback();
+      showCountdownStep(count);
+      return;
     }
-  }, 1000);
+
+    clearInterval(countdown);
+
+    showCountdownStep("GO!", "is-go");
+
+    setTimeout(() => {
+      hideCountdown();
+      callback();
+    }, COUNTDOWN_GO_MS);
+  }, COUNTDOWN_STEP_MS);
 }
 
-function countUpTo(el, endValue, duration = 600) {
+function countUpTo(el, endValue, duration = 600, suffix = "ms", from = 0) {
   const t0 = performance.now();
 
   const tick = (now) => {
@@ -323,14 +482,14 @@ function countUpTo(el, endValue, duration = 600) {
 
     const eased = 1 - Math.pow(1 - progress, 3);
 
-    const value = Math.round(endValue * eased);
+    const value = Math.round(from + (endValue - from) * eased);
 
-    el.textContent = `${value}ms`;
+    el.textContent = `${value}${suffix}`;
 
     if (progress < 1) {
       requestAnimationFrame(tick);
     } else {
-      el.textContent = `${endValue}ms`;
+      el.textContent = `${endValue}${suffix}`;
     }
   };
 
@@ -384,6 +543,10 @@ function showResults() {
 
   resultsScreen.style.display = "flex";
 
+  if (finalScore) {
+    countUpTo(finalScore, score, 900, "");
+  }
+
   countUpTo(averageScore, average);
   countUpTo(fastestScore, fastest);
   countUpTo(resultBestScore, best);
@@ -392,8 +555,7 @@ function showResults() {
 function startRound() {
   // Starting a fresh run
   if (round >= TOTAL_ROUNDS) {
-    round = 0;
-    reactionTimes = [];
+    resetRun();
   }
 
   round++;
@@ -418,7 +580,7 @@ function startRound() {
     Math.random() * (currentDifficulty.maxDelay - currentDifficulty.minDelay);
 
   startCountdown(() => {
-    gameStatus.textContent = "Wait for it...";
+    gameStatus.textContent = "Watch for the cat...";
 
     setTimeout(() => {
       // Position first, then reveal
@@ -431,7 +593,7 @@ function startRound() {
       target.style.left = `${randomX}px`;
       target.style.top = `${randomY}px`;
 
-      gameStatus.textContent = "GO!";
+      gameStatus.textContent = "CATCH IT!";
       targetReady = true;
       target.classList.add("is-visible");
 
@@ -483,6 +645,12 @@ if (startButton) {
     stopMeow();
 
     reactionTimes.push(reaction);
+
+    const rating = getRating(reaction);
+
+    addScore(rating.points);
+
+    showHitFeedback(rating, hitX, hitY);
 
     reactionTime.textContent = `${reaction}ms`;
 
@@ -556,8 +724,7 @@ if (playAgainButton) {
     resultSound.pause();
     resultSound.currentTime = 0;
 
-    reactionTimes = [];
-    round = 0;
+    resetRun();
     isPlaying = false;
 
     resultsScreen.style.display = "none";

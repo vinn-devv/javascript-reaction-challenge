@@ -3163,3 +3163,285 @@ button:focus-visible {
 
   background: rgba(255, 255, 255, 0.04);
 }
+
+/* ---------- Start countdown ---------- */
+
+.countdown-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  pointer-events: none;
+}
+
+/* Hide the small status line while the big countdown is showing */
+.game-area.is-counting .game-status {
+  visibility: hidden;
+}
+
+.countdown-text {
+  font-family: var(--font-display);
+  font-size: 84px;
+  line-height: 1;
+  color: var(--text-primary);
+  opacity: 0;
+
+  text-shadow:
+    0 0 14px rgba(168, 85, 247, 0.75),
+    0 0 40px rgba(168, 85, 247, 0.35);
+}
+
+.countdown-text.is-pop {
+  animation: countdownPop 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.countdown-text.is-go {
+  font-size: 60px;
+  color: var(--pink);
+
+  text-shadow:
+    0 0 16px rgba(233, 213, 255, 0.8),
+    0 0 46px rgba(168, 85, 247, 0.55);
+
+  animation: countdownGo 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.countdown-text.is-round {
+  font-size: 24px;
+  letter-spacing: 0.06em;
+  color: var(--signal-strong);
+
+  animation: countdownRound 0.8s ease-out forwards;
+}
+
+@keyframes countdownPop {
+  0% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  75% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes countdownGo {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+@keyframes countdownRound {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .countdown-text {
+    font-size: 60px;
+  }
+
+  .countdown-text.is-go {
+    font-size: 44px;
+  }
+
+  .countdown-text.is-round {
+    font-size: 18px;
+  }
+}
+
+/* Reduced motion: skip the animation but still show each step */
+@media (prefers-reduced-motion: reduce) {
+  .countdown-text.is-pop,
+  .countdown-text.is-go,
+  .countdown-text.is-round {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ---------- Score + performance feedback ---------- */
+
+.score-value.is-bump {
+  animation: scoreBump 0.3s ease-out;
+}
+
+@keyframes scoreBump {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.14);
+    color: var(--signal-strong);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.hit-feedback {
+  position: absolute;
+  z-index: 4;
+
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+
+  transform: translate(-50%, -50%);
+  animation: hitFloat 1s ease-out forwards;
+}
+
+.hit-feedback-label {
+  display: block;
+
+  font-family: var(--font-display);
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.hit-feedback-points {
+  display: block;
+  margin-top: 8px;
+
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.hit-feedback.is-lightning {
+  color: #fde68a;
+  text-shadow:
+    0 0 12px rgba(253, 230, 138, 0.8),
+    0 0 30px rgba(250, 204, 21, 0.4);
+}
+
+.hit-feedback.is-lightning .hit-feedback-label {
+  font-size: 17px;
+}
+
+.hit-feedback.is-fast {
+  color: var(--pink);
+  text-shadow: 0 0 14px rgba(233, 213, 255, 0.6);
+}
+
+.hit-feedback.is-good {
+  color: var(--signal-strong);
+  text-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
+}
+
+.hit-feedback.is-okay {
+  color: var(--text-muted);
+}
+
+.hit-feedback.is-slow {
+  color: var(--text-faint);
+}
+
+@keyframes hitFloat {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -30%) scale(0.6);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -60%) scale(1.1);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -150%) scale(1);
+  }
+}
+
+.result-score {
+  margin-bottom: 26px;
+}
+
+.result-score span {
+  display: block;
+  margin-bottom: 10px;
+
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--text-faint);
+}
+
+.result-score strong {
+  display: block;
+
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1.2;
+  color: var(--pink);
+
+  text-shadow:
+    0 0 14px rgba(168, 85, 247, 0.7),
+    0 0 36px rgba(168, 85, 247, 0.3);
+}
+
+@media (max-width: 480px) {
+  .hit-feedback-label {
+    font-size: 11px;
+  }
+
+  .hit-feedback.is-lightning .hit-feedback-label {
+    font-size: 13px;
+  }
+
+  .hit-feedback-points {
+    font-size: 15px;
+  }
+
+  .result-score strong {
+    font-size: 28px;
+  }
+}
+
+/* Reduced motion: no float, just show the popup briefly */
+@media (prefers-reduced-motion: reduce) {
+  .hit-feedback {
+    animation: none;
+    opacity: 1;
+  }
+}
