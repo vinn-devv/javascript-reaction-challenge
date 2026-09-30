@@ -843,48 +843,56 @@ function countUpTo(el, endValue, duration = 600, suffix = "ms", from = 0) {
   requestAnimationFrame(tick);
 }
 
+const RESULT_TIERS = [
+  {
+    test: (average) => average < 500,
+    rank: "FAST",
+    tier: "fast",
+    gif: "assets/Cat Meme GIF.gif",
+    title: "I see, you have fast hands.",
+    sound: "assets/dexter-meme.mp3",
+  },
+  {
+    test: (average) => average <= 700,
+    rank: "NORMAL",
+    tier: "normal",
+    gif: "assets/Happy Cat GIF.gif",
+    title: "Absolute nyan! Nice!",
+    sound: "assets/happy-cat.mp3",
+  },
+  {
+    test: () => true,
+    rank: "SLOW",
+    tier: "slow",
+    gif: "assets/Lemme Think GIF.gif",
+    title: "Is this you?",
+    sound: "assets/loading-meme.mp3",
+  },
+];
+
+function getResultTier(average) {
+  return RESULT_TIERS.find((item) => item.test(average));
+}
+
 function updateResultReaction(average) {
+  const result = getResultTier(average);
+
   if (!resultGif || !resultTitle) {
-    return;
+    return result;
   }
 
   resultSound.pause();
   resultSound.currentTime = 0;
 
-  if (average < 500) {
-    resultGif.src = "assets/Cat Meme GIF.gif";
-
-    resultTitle.textContent = "I see, you have fast hands.";
-
-    resultSound.src = "assets/dexter-meme.mp3";
-  } else if (average <= 700) {
-    resultGif.src = "assets/Happy Cat GIF.gif";
-
-    resultTitle.textContent = "Absolute nyan! Nice!";
-
-    resultSound.src = "assets/happy-cat.mp3";
-  } else {
-    resultGif.src = "assets/Lemme Think GIF.gif";
-
-    resultTitle.textContent = "Is this you?";
-
-    resultSound.src = "assets/loading-meme.mp3";
-  }
+  resultGif.src = result.gif;
+  resultTitle.textContent = result.title;
+  resultSound.src = result.sound;
 
   resultSound.play().catch((error) => {
     console.log("Result sound failed:", error);
   });
-}
 
-const RANKS = [
-  { max: 250, label: "LIGHTNING", tier: "lightning" },
-  { max: 350, label: "FAST", tier: "fast" },
-  { max: 500, label: "NORMAL", tier: "normal" },
-  { max: Infinity, label: "SLOW", tier: "slow" },
-];
-
-function getRank(average) {
-  return RANKS.find((rank) => average < rank.max);
+  return result;
 }
 
 function renderBreakdown() {
@@ -939,13 +947,11 @@ function showResults() {
 
   updateRoundDots(TOTAL_ROUNDS + 1);
 
-  updateResultReaction(average);
+  const result = updateResultReaction(average);
 
   if (resultRank) {
-    const rank = getRank(average);
-
-    resultRank.className = `result-rank is-${rank.tier}`;
-    resultRank.textContent = rank.label;
+    resultRank.className = `result-rank is-${result.tier}`;
+    resultRank.textContent = result.rank;
   }
 
   renderBreakdown();

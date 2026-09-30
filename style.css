@@ -4143,7 +4143,7 @@ body.is-paused .miss-feedback {
   color: var(--text-faint);
 }
 
-.result-rank.is-lightning {
+.result-rank.is-fast {
   --rank-color: var(--pink);
 
   box-shadow:
@@ -4151,14 +4151,10 @@ body.is-paused .miss-feedback {
     inset 0 0 12px rgba(168, 85, 247, 0.18);
 }
 
-.result-rank.is-fast {
+.result-rank.is-normal {
   --rank-color: var(--signal-strong);
 
   box-shadow: 0 0 14px rgba(192, 132, 252, 0.25);
-}
-
-.result-rank.is-normal {
-  --rank-color: #8b5cf6;
 }
 
 .result-rank.is-slow {
