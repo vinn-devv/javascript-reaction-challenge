@@ -60,8 +60,30 @@
         <p class="home-best-row">
           Fastest reaction: <span class="home-best">—</span>
         </p>
+
+        <button class="achievements-btn" type="button">
+          Achievements <span class="achievements-count">0/8</span>
+        </button>
       </section>
     </main>
+
+    <section
+      id="achievements-screen"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="achievements-title"
+      aria-hidden="true"
+    >
+      <div class="achievements-card">
+        <p class="results-label">TROPHIES</p>
+
+        <h2 id="achievements-title">Achievements</h2>
+
+        <ul class="achievements-list"></ul>
+
+        <button id="achievements-close-btn" type="button">Close</button>
+      </div>
+    </section>
 
     <div id="game-loading">
       <div class="loading-den">

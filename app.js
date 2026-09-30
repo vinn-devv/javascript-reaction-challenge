@@ -348,6 +348,14 @@ const sfx = {
     });
   },
 
+  achievement() {
+    playNotes([659, 880, 1319], {
+      step: 0.1,
+      duration: 0.16,
+      type: "triangle",
+    });
+  },
+
   newBest() {
     playNotes([784, 988, 1175, 1568], {
       step: 0.09,
@@ -385,6 +393,7 @@ let score = 0;
 let combo = 0;
 let maxCombo = 0;
 let isNewBest = false;
+let hadBestBefore = false;
 let misses = 0;
 let roundLive = false;
 let comboHideTimer = null;
@@ -969,6 +978,14 @@ function showResults() {
     setTimeout(() => sfx.newBest(), 500);
   }
 
+  const unlockedNow = checkAchievements();
+
+  renderResultAchievements(unlockedNow);
+
+  if (unlockedNow.length > 0) {
+    setTimeout(() => sfx.achievement(), 1300);
+  }
+
   resultsScreen.style.display = "flex";
 
   if (playAgainButton) {
@@ -1007,6 +1024,7 @@ function startRound() {
 
   if (round === 1) {
     isNewBest = false;
+    hadBestBefore = best !== null;
   }
 
   renderDifficulty(round);
@@ -1380,4 +1398,226 @@ if (gameArea) {
     },
     true,
   );
+}
+
+const ACHIEVEMENTS = [
+  {
+    id: "first_pounce",
+    name: "First Pounce",
+    desc: "Finish your first game",
+    check: (s) => s.gamesPlayed >= 1,
+  },
+  {
+    id: "quick_paws",
+    name: "Quick Paws",
+    desc: "React in under 300ms",
+    check: (s) => s.fastest < 300,
+  },
+  {
+    id: "lightning_paws",
+    name: "Lightning Paws",
+    desc: "React in under 200ms",
+    check: (s) => s.fastest < 200,
+  },
+  {
+    id: "purrfect_streak",
+    name: "Purrfect Streak",
+    desc: "Land a 5 combo",
+    check: (s) => s.maxCombo >= 5,
+  },
+  {
+    id: "sharp_claws",
+    name: "Sharp Claws",
+    desc: "Finish with 100% accuracy",
+    check: (s) => s.accuracy === 100,
+  },
+  {
+    id: "score_hunter",
+    name: "Score Hunter",
+    desc: "Score 700 or more in one game",
+    check: (s) => s.score >= 700,
+  },
+  {
+    id: "record_breaker",
+    name: "Record Breaker",
+    desc: "Beat your personal best",
+    check: (s) => s.brokeRecord,
+  },
+  {
+    id: "regular_kitty",
+    name: "Regular Kitty",
+    desc: "Finish 10 games",
+    check: (s) => s.gamesPlayed >= 10,
+  },
+];
+
+const resultAchievements = document.querySelector("#result-achievements");
+const achievementsBtn = document.querySelector(".achievements-btn");
+const achievementsCount = document.querySelector(".achievements-count");
+const achievementsScreen = document.querySelector("#achievements-screen");
+const achievementsList = document.querySelector(".achievements-list");
+const achievementsCloseBtn = document.querySelector("#achievements-close-btn");
+
+function loadUnlocked() {
+  try {
+    const stored = JSON.parse(localStorage.getItem("achievements"));
+
+    return Array.isArray(stored) ? stored : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+function saveUnlocked(list) {
+  try {
+    localStorage.setItem("achievements", JSON.stringify(list));
+  } catch (err) {
+    console.warn("Could not save achievements:", err);
+  }
+}
+
+function checkAchievements() {
+  const gamesPlayed = Number(localStorage.getItem("gamesPlayed") || 0) + 1;
+
+  try {
+    localStorage.setItem("gamesPlayed", gamesPlayed);
+  } catch (err) {
+    console.warn("Could not save games played:", err);
+  }
+
+  const hits = reactionTimes.length;
+
+  const stats = {
+    gamesPlayed,
+    fastest: Math.min(...reactionTimes),
+    maxCombo,
+    score,
+    accuracy: Math.round((hits / (hits + misses)) * 100),
+    brokeRecord: isNewBest && hadBestBefore,
+  };
+
+  const unlocked = loadUnlocked();
+
+  const earned = ACHIEVEMENTS.filter(
+    (achievement) =>
+      !unlocked.includes(achievement.id) && achievement.check(stats),
+  );
+
+  if (earned.length > 0) {
+    saveUnlocked([...unlocked, ...earned.map((achievement) => achievement.id)]);
+  }
+
+  return earned;
+}
+
+function renderResultAchievements(list) {
+  if (!resultAchievements) {
+    return;
+  }
+
+  resultAchievements.textContent = "";
+  resultAchievements.classList.toggle("has-items", list.length > 0);
+
+  if (list.length === 0) {
+    return;
+  }
+
+  const heading = document.createElement("p");
+
+  heading.className = "result-achievements-title";
+  heading.textContent = "ACHIEVEMENT UNLOCKED";
+
+  resultAchievements.appendChild(heading);
+
+  list.forEach((achievement, i) => {
+    const chip = document.createElement("div");
+
+    chip.className = "achievement-chip";
+    chip.style.setProperty("--i", i);
+
+    const name = document.createElement("strong");
+    name.textContent = achievement.name;
+
+    const desc = document.createElement("span");
+    desc.textContent = achievement.desc;
+
+    chip.append(name, desc);
+    resultAchievements.appendChild(chip);
+  });
+}
+
+function renderAchievementsList() {
+  const unlocked = loadUnlocked();
+
+  if (achievementsCount) {
+    achievementsCount.textContent = `${unlocked.length}/${ACHIEVEMENTS.length}`;
+  }
+
+  if (!achievementsList) {
+    return;
+  }
+
+  achievementsList.textContent = "";
+
+  ACHIEVEMENTS.forEach((achievement) => {
+    const isUnlocked = unlocked.includes(achievement.id);
+
+    const item = document.createElement("li");
+    item.className = "achievement-item";
+    item.classList.toggle("is-unlocked", isUnlocked);
+
+    const text = document.createElement("div");
+
+    const name = document.createElement("strong");
+    name.textContent = achievement.name;
+
+    const desc = document.createElement("span");
+    desc.textContent = achievement.desc;
+
+    text.append(name, desc);
+
+    const status = document.createElement("em");
+    status.textContent = isUnlocked ? "UNLOCKED" : "LOCKED";
+
+    item.append(text, status);
+    achievementsList.appendChild(item);
+  });
+}
+
+function openAchievements() {
+  renderAchievementsList();
+
+  achievementsScreen.classList.add("is-open");
+  achievementsScreen.setAttribute("aria-hidden", "false");
+
+  if (achievementsCloseBtn) {
+    achievementsCloseBtn.focus();
+  }
+}
+
+function closeAchievements() {
+  achievementsScreen.classList.remove("is-open");
+  achievementsScreen.setAttribute("aria-hidden", "true");
+}
+
+if (achievementsBtn && achievementsScreen) {
+  renderAchievementsList();
+
+  achievementsBtn.addEventListener("click", openAchievements);
+
+  if (achievementsCloseBtn) {
+    achievementsCloseBtn.addEventListener("click", closeAchievements);
+  }
+
+  achievementsScreen.addEventListener("click", (event) => {
+    if (event.target === achievementsScreen) {
+      closeAchievements();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeAchievements();
+    }
+  });
 }
