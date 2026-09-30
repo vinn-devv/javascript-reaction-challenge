@@ -3542,3 +3542,99 @@ button:focus-visible {
     font-size: 11px;
   }
 }
+
+.game-area {
+  border-color: var(--level-border, var(--border-hair));
+  transition: border-color 0.4s ease;
+}
+
+.difficulty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.difficulty-name {
+  min-width: 58px;
+
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-align: right;
+  color: var(--level-color, var(--text-faint));
+
+  transition: color 0.3s ease;
+}
+
+.difficulty-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 18px;
+}
+
+.difficulty-bars .bar {
+  width: 5px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.1);
+
+  transition:
+    background 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.difficulty-bars .bar:nth-child(1) {
+  height: 6px;
+}
+
+.difficulty-bars .bar:nth-child(2) {
+  height: 9px;
+}
+
+.difficulty-bars .bar:nth-child(3) {
+  height: 12px;
+}
+
+.difficulty-bars .bar:nth-child(4) {
+  height: 15px;
+}
+
+.difficulty-bars .bar:nth-child(5) {
+  height: 18px;
+}
+
+.difficulty-bars .bar.is-on {
+  background: var(--level-color);
+  box-shadow: 0 0 8px var(--level-color);
+}
+
+.difficulty.is-up {
+  animation: difficultyUp 0.45s ease-out;
+}
+
+@keyframes difficultyUp {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.countdown-text.is-round {
+  color: var(--level-color, var(--signal-strong));
+  text-align: center;
+  white-space: pre-line;
+  line-height: 1.7;
+
+  text-shadow: 0 0 18px var(--level-color, rgba(168, 85, 247, 0.6));
+}
+
+@media (max-width: 360px) {
+  .difficulty-name {
+    display: none;
+  }
+}

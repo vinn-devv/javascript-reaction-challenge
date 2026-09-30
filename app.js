@@ -38,6 +38,10 @@ const comboCount = document.querySelector(".combo-count");
 const comboMultiplier = document.querySelector(".combo-multiplier");
 const resultStreak = document.querySelector("#result-streak");
 
+const difficultyEl = document.querySelector(".difficulty");
+const difficultyName = document.querySelector(".difficulty-name");
+const difficultyBarsEl = document.querySelector(".difficulty-bars");
+
 function playHomeMusic() {
   if (!homeMusic) {
     return;
@@ -225,6 +229,20 @@ if (roundDotsEl) {
   }
 }
 
+let difficultyBars = [];
+
+if (difficultyBarsEl) {
+  for (let i = 0; i < TOTAL_ROUNDS; i++) {
+    const bar = document.createElement("span");
+
+    bar.className = "bar";
+
+    difficultyBarsEl.appendChild(bar);
+
+    difficultyBars.push(bar);
+  }
+}
+
 function updateRoundDots(currentRound) {
   roundDots.forEach((dot, i) => {
     const dotRound = i + 1;
@@ -236,30 +254,40 @@ function updateRoundDots(currentRound) {
 
 const difficulty = {
   1: {
+    label: "EASY",
+    rgb: "192, 132, 252",
     minDelay: 1000,
     maxDelay: 3000,
     catSize: 96,
   },
 
   2: {
+    label: "NORMAL",
+    rgb: "168, 85, 247",
     minDelay: 800,
     maxDelay: 2500,
     catSize: 92,
   },
 
   3: {
+    label: "TRICKY",
+    rgb: "217, 70, 239",
     minDelay: 600,
     maxDelay: 2000,
     catSize: 88,
   },
 
   4: {
+    label: "HARD",
+    rgb: "244, 114, 182",
     minDelay: 400,
     maxDelay: 1500,
     catSize: 84,
   },
 
   5: {
+    label: "INSANE",
+    rgb: "251, 113, 133",
     minDelay: 250,
     maxDelay: 1000,
     catSize: 78,
@@ -273,6 +301,39 @@ const RATINGS = [
   { max: 700, label: "OKAY", tier: "okay" },
   { max: Infinity, label: "SLOW", tier: "slow" },
 ];
+
+function renderDifficulty(level) {
+  if (!difficultyEl) {
+    return;
+  }
+
+  const config = difficulty[level];
+
+  difficultyBars.forEach((bar, i) => {
+    bar.classList.toggle("is-on", i < level);
+  });
+
+  difficultyName.textContent = config ? config.label : "READY";
+
+  difficultyEl.classList.remove("is-up");
+
+  if (config) {
+    document.body.style.setProperty("--level-color", `rgb(${config.rgb})`);
+    document.body.style.setProperty(
+      "--level-border",
+      `rgba(${config.rgb}, 0.4)`,
+    );
+
+    if (level > 1) {
+      void difficultyEl.offsetWidth;
+
+      difficultyEl.classList.add("is-up");
+    }
+  } else {
+    document.body.style.removeProperty("--level-color");
+    document.body.style.removeProperty("--level-border");
+  }
+}
 
 const MAX_POINTS_PER_ROUND = 200;
 
@@ -353,6 +414,7 @@ function resetRun() {
   maxCombo = 0;
 
   renderComboBadge(0);
+  renderDifficulty(0);
 
   if (scoreValue) {
     scoreValue.textContent = "0";
@@ -493,7 +555,7 @@ function startCountdown(callback) {
   gameArea.classList.add("is-counting");
 
   if (round > 1 && !FULL_COUNTDOWN_EVERY_ROUND) {
-    showCountdownStep(`ROUND ${round}`, "is-round");
+    showCountdownStep(`ROUND ${round}\n${difficulty[round].label}`, "is-round");
 
     setTimeout(() => {
       hideCountdown();
@@ -613,6 +675,8 @@ function startRound() {
   }
 
   round++;
+
+  renderDifficulty(round);
 
   isPlaying = true;
   targetReady = false;
