@@ -22,9 +22,6 @@ const playAgainButton = document.querySelector("#play-again-btn");
 const resultsHomeButton = document.querySelector("#results-home-btn");
 const homeMusic = document.querySelector("#home-music");
 
-const soundButton = document.querySelector(".sound-btn");
-const soundText = document.querySelector(".sound-text");
-
 const mouseGlow = document.querySelector(".mouse-glow");
 
 const catCanvas = document.querySelector(".cat-gif");
@@ -100,52 +97,13 @@ function playHomeMusic() {
   homeMusic.volume = 0.03;
 
   homeMusic.play().catch(() => {
-    console.log("Autoplay was blocked by the browser.");
+    const retry = () => {
+      playHomeMusic();
+    };
+
+    document.addEventListener("pointerdown", retry, { once: true });
+    document.addEventListener("keydown", retry, { once: true });
   });
-}
-
-function updateSoundButton() {
-  if (!soundButton || !homeMusic || !soundText) {
-    return;
-  }
-
-  const isOn = !homeMusic.paused && !homeMusic.muted;
-
-  soundButton.classList.toggle("is-off", !isOn);
-
-  soundText.textContent = isOn ? "ON" : "OFF";
-
-  soundButton.setAttribute(
-    "aria-label",
-    isOn ? "Turn music off" : "Turn music on",
-  );
-
-  soundButton.setAttribute("aria-pressed", String(isOn));
-}
-
-if (soundButton && homeMusic) {
-  soundButton.addEventListener("click", () => {
-    if (homeMusic.paused) {
-      homeMusic.muted = false;
-      homeMusic.volume = 0.03;
-
-      homeMusic.play().catch(() => {
-        console.log("Music playback was blocked.");
-      });
-    } else {
-      homeMusic.muted = !homeMusic.muted;
-    }
-
-    saveSetting("music", !homeMusic.paused && !homeMusic.muted);
-
-    updateSoundButton();
-  });
-
-  homeMusic.addEventListener("play", updateSoundButton);
-  homeMusic.addEventListener("pause", updateSoundButton);
-  homeMusic.addEventListener("volumechange", updateSoundButton);
-
-  updateSoundButton();
 }
 
 if (catCanvas && catSource) {

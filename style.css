@@ -3099,71 +3099,6 @@ button:focus-visible {
   object-fit: contain;
 }
 
-.sound-btn {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-
-  display: flex;
-  align-items: center;
-  gap: 7px;
-
-  padding: 8px 10px;
-
-  border: 1px solid var(--border-hair);
-  border-radius: 8px;
-
-  background: rgba(168, 85, 247, 0.04);
-  color: var(--text-muted);
-
-  font-family: var(--font-mono);
-  font-size: 10px;
-
-  cursor: pointer;
-
-  transition:
-    color 0.18s ease,
-    border-color 0.18s ease,
-    background 0.18s ease,
-    box-shadow 0.18s ease,
-    transform 0.18s ease;
-}
-
-.sound-icon {
-  font-size: 14px;
-  line-height: 1;
-}
-
-.sound-btn:hover {
-  color: var(--signal-strong);
-
-  border-color: var(--signal);
-
-  background: rgba(168, 85, 247, 0.08);
-
-  box-shadow: 0 0 18px rgba(168, 85, 247, 0.12);
-
-  transform: translateY(-1px);
-}
-
-.sound-btn.is-off {
-  color: var(--text-faint);
-
-  border-color: var(--border-hair);
-
-  background: rgba(255, 255, 255, 0.02);
-
-  box-shadow: none;
-}
-
-.sound-btn.is-off:hover {
-  color: var(--text-muted);
-
-  border-color: var(--border-hair-strong);
-
-  background: rgba(255, 255, 255, 0.04);
-}
-
 .countdown-overlay {
   position: absolute;
   inset: 0;
@@ -4522,15 +4457,22 @@ body.is-paused .miss-feedback {
 }
 
 .settings-btn {
-  padding: 9px 14px;
+  position: absolute;
+  top: 18px;
+  left: 18px;
 
-  font-family: var(--font-mono);
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+  padding: 0;
 
   color: var(--text-muted);
-  background: rgba(168, 85, 247, 0.035);
-  border: 1px solid var(--border-hair-strong);
-  border-radius: 9px;
+  background: rgba(168, 85, 247, 0.04);
+  border: 1px solid var(--border-hair);
+  border-radius: 8px;
 
   cursor: pointer;
   transition:
@@ -4541,12 +4483,19 @@ body.is-paused .miss-feedback {
     box-shadow 0.18s ease;
 }
 
+.settings-btn svg {
+  transition: transform 0.4s ease;
+}
+
 .settings-btn:hover {
   color: var(--signal-strong);
   border-color: var(--signal);
   background: rgba(168, 85, 247, 0.08);
-  transform: translateY(-1px);
   box-shadow: 0 0 18px rgba(168, 85, 247, 0.12);
+}
+
+.settings-btn:hover svg {
+  transform: rotate(60deg);
 }
 
 #pause-settings-btn {
