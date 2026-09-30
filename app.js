@@ -22,6 +22,9 @@ const playAgainButton = document.querySelector("#play-again-btn");
 const resultsHomeButton = document.querySelector("#results-home-btn");
 const homeMusic = document.querySelector("#home-music");
 
+const soundButton = document.querySelector(".sound-btn");
+const soundText = document.querySelector(".sound-text");
+
 const mouseGlow = document.querySelector(".mouse-glow");
 
 const catCanvas = document.querySelector(".cat-gif");
@@ -32,11 +35,37 @@ function playHomeMusic() {
     return;
   }
 
-  homeMusic.volume = 0.01;
+  homeMusic.volume = 0.03;
 
   homeMusic.play().catch(() => {
     console.log("Autoplay was blocked by the browser.");
   });
+}
+
+function updateSoundButton() {
+  if (!soundButton || !homeMusic) {
+    return;
+  }
+
+  if (homeMusic.muted) {
+    soundButton.classList.add("is-off");
+    soundButton.setAttribute("aria-label", "Turn music on");
+    soundText.textContent = "OFF";
+  } else {
+    soundButton.classList.remove("is-off");
+    soundButton.setAttribute("aria-label", "Turn music off");
+    soundText.textContent = "ON";
+  }
+}
+
+if (soundButton && homeMusic) {
+  soundButton.addEventListener("click", () => {
+    homeMusic.muted = !homeMusic.muted;
+
+    updateSoundButton();
+  });
+
+  updateSoundButton();
 }
 
 if (catCanvas && catSource) {
@@ -352,7 +381,7 @@ function updateResultReaction(average) {
   resultSound.pause();
   resultSound.currentTime = 0;
 
-  if (average < 400) {
+  if (average < 500) {
     resultGif.src = "assets/Cat Meme GIF.gif";
     resultTitle.textContent = "I see, you have fast hands.";
     resultSound.src = "assets/dexter-meme.mp3";
