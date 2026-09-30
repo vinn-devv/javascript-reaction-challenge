@@ -39,6 +39,7 @@ const comboMultiplier = document.querySelector(".combo-multiplier");
 const resultStreak = document.querySelector("#result-streak");
 const roundBreakdown = document.querySelector(".round-breakdown");
 const accuracyScore = document.querySelector("#accuracy-score");
+const resultRank = document.querySelector("#result-rank");
 const resultsLabel = document.querySelector("#results-screen .results-label");
 const resultBestStat = resultBestScore
   ? resultBestScore.closest(".result-stat")
@@ -875,6 +876,17 @@ function updateResultReaction(average) {
   });
 }
 
+const RANKS = [
+  { max: 250, label: "LIGHTNING", tier: "lightning" },
+  { max: 350, label: "FAST", tier: "fast" },
+  { max: 500, label: "NORMAL", tier: "normal" },
+  { max: Infinity, label: "SLOW", tier: "slow" },
+];
+
+function getRank(average) {
+  return RANKS.find((rank) => average < rank.max);
+}
+
 function renderBreakdown() {
   if (!roundBreakdown) {
     return;
@@ -928,6 +940,13 @@ function showResults() {
   updateRoundDots(TOTAL_ROUNDS + 1);
 
   updateResultReaction(average);
+
+  if (resultRank) {
+    const rank = getRank(average);
+
+    resultRank.className = `result-rank is-${rank.tier}`;
+    resultRank.textContent = rank.label;
+  }
 
   renderBreakdown();
 
