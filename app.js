@@ -56,8 +56,44 @@ const resumeButton = document.querySelector("#resume-btn");
 const restartButton = document.querySelector("#restart-btn");
 const quitButton = document.querySelector("#quit-btn");
 
+const DEFAULT_SETTINGS = { music: true, sfx: true, effects: true };
+
+function loadSettings() {
+  try {
+    return {
+      ...DEFAULT_SETTINGS,
+      ...JSON.parse(localStorage.getItem("settings")),
+    };
+  } catch (err) {
+    return { ...DEFAULT_SETTINGS };
+  }
+}
+
+let settings = loadSettings();
+
+function applySettings() {
+  document.body.classList.toggle("no-effects", !settings.effects);
+
+  if (!settings.sfx) {
+    meowSound.pause();
+    resultSound.pause();
+  }
+}
+
+function saveSetting(key, value) {
+  settings = { ...settings, [key]: value };
+
+  try {
+    localStorage.setItem("settings", JSON.stringify(settings));
+  } catch (err) {
+    console.warn("Could not save settings:", err);
+  }
+
+  applySettings();
+}
+
 function playHomeMusic() {
-  if (!homeMusic) {
+  if (!homeMusic || !settings.music) {
     return;
   }
 
@@ -99,6 +135,8 @@ if (soundButton && homeMusic) {
     } else {
       homeMusic.muted = !homeMusic.muted;
     }
+
+    saveSetting("music", !homeMusic.paused && !homeMusic.muted);
 
     updateSoundButton();
   });
@@ -187,6 +225,10 @@ resultSound.volume = 0.5;
 resultSound.preload = "auto";
 
 function playMeow() {
+  if (!settings.sfx) {
+    return;
+  }
+
   try {
     meowSound.currentTime = 0;
 
@@ -237,6 +279,10 @@ function playTone({
   delay = 0,
   slideTo = null,
 }) {
+  if (!settings.sfx) {
+    return;
+  }
+
   const ctx = getAudioCtx();
 
   if (!ctx) {
@@ -901,9 +947,11 @@ function updateResultReaction(average) {
   resultTitle.textContent = result.title;
   resultSound.src = result.sound;
 
-  resultSound.play().catch((error) => {
-    console.log("Result sound failed:", error);
-  });
+  if (settings.sfx) {
+    resultSound.play().catch((error) => {
+      console.log("Result sound failed:", error);
+    });
+  }
 
   return result;
 }
@@ -1345,6 +1393,10 @@ if (pauseButton && pauseScreen) {
       return;
     }
 
+    if (settingsScreen && settingsScreen.classList.contains("is-open")) {
+      return;
+    }
+
     const key = event.key.toLowerCase();
 
     if (key === "escape" || key === "p") {
@@ -1712,3 +1764,93 @@ if (modeButtons.length > 0) {
 if (modeTag) {
   modeTag.textContent = `MODE: ${getMode().label}`;
 }
+
+const settingsScreen = document.querySelector("#settings-screen");
+const settingsBtn = document.querySelector(".settings-btn");
+const pauseSettingsBtn = document.querySelector("#pause-settings-btn");
+const settingsCloseBtn = document.querySelector("#settings-close-btn");
+const settingToggles = document.querySelectorAll(".toggle[data-setting]");
+
+function renderSettings() {
+  settingToggles.forEach((toggle) => {
+    const isOn = settings[toggle.dataset.setting];
+
+    toggle.classList.toggle("is-on", isOn);
+    toggle.setAttribute("aria-checked", String(isOn));
+  });
+}
+
+function openSettings() {
+  renderSettings();
+
+  settingsScreen.classList.add("is-open");
+  settingsScreen.setAttribute("aria-hidden", "false");
+
+  if (settingsCloseBtn) {
+    settingsCloseBtn.focus();
+  }
+}
+
+function closeSettings() {
+  settingsScreen.classList.remove("is-open");
+  settingsScreen.setAttribute("aria-hidden", "true");
+}
+
+function applyMusicSetting(isOn) {
+  if (!homeMusic) {
+    return;
+  }
+
+  if (isOn) {
+    homeMusic.muted = false;
+    playHomeMusic();
+  } else {
+    homeMusic.pause();
+  }
+}
+
+if (settingsScreen) {
+  if (settingsBtn) {
+    settingsBtn.addEventListener("click", openSettings);
+  }
+
+  if (pauseSettingsBtn) {
+    pauseSettingsBtn.addEventListener("click", openSettings);
+  }
+
+  if (settingsCloseBtn) {
+    settingsCloseBtn.addEventListener("click", closeSettings);
+  }
+
+  settingsScreen.addEventListener("click", (event) => {
+    if (event.target === settingsScreen) {
+      closeSettings();
+    }
+  });
+
+  settingToggles.forEach((toggle) => {
+    toggle.addEventListener("click", () => {
+      const key = toggle.dataset.setting;
+      const value = !settings[key];
+
+      saveSetting(key, value);
+
+      if (key === "music") {
+        applyMusicSetting(value);
+      }
+
+      renderSettings();
+    });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (
+      event.key === "Escape" &&
+      settingsScreen.classList.contains("is-open")
+    ) {
+      closeSettings();
+    }
+  });
+}
+
+applySettings();

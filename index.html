@@ -99,7 +99,77 @@
 
         <button id="resume-btn" type="button">Resume</button>
         <button id="restart-btn" type="button">Restart</button>
+        <button id="pause-settings-btn" type="button">Settings</button>
         <button id="quit-btn" type="button">Quit to Home</button>
+      </div>
+    </section>
+
+    <section
+      id="settings-screen"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="settings-title"
+      aria-hidden="true"
+    >
+      <div class="settings-card">
+        <p class="results-label">OPTIONS</p>
+
+        <h2 id="settings-title">Settings</h2>
+
+        <ul class="settings-list">
+          <li class="setting-row">
+            <div>
+              <strong>Music</strong>
+              <span>Home screen soundtrack</span>
+            </div>
+            <button
+              class="toggle"
+              type="button"
+              role="switch"
+              aria-checked="true"
+              aria-label="Music"
+              data-setting="music"
+            >
+              <span class="toggle-knob"></span>
+            </button>
+          </li>
+
+          <li class="setting-row">
+            <div>
+              <strong>Sound effects</strong>
+              <span>Clicks, hits and countdown</span>
+            </div>
+            <button
+              class="toggle"
+              type="button"
+              role="switch"
+              aria-checked="true"
+              aria-label="Sound effects"
+              data-setting="sfx"
+            >
+              <span class="toggle-knob"></span>
+            </button>
+          </li>
+
+          <li class="setting-row">
+            <div>
+              <strong>Visual effects</strong>
+              <span>Glow, stars and animations</span>
+            </div>
+            <button
+              class="toggle"
+              type="button"
+              role="switch"
+              aria-checked="true"
+              aria-label="Visual effects"
+              data-setting="effects"
+            >
+              <span class="toggle-knob"></span>
+            </button>
+          </li>
+        </ul>
+
+        <button id="settings-close-btn" type="button">Close</button>
       </div>
     </section>
 
