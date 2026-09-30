@@ -4049,3 +4049,67 @@ body.is-paused .combo-badge {
     transform: scale(1) rotate(0);
   }
 }
+
+.miss-feedback {
+  position: absolute;
+  z-index: 4;
+
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  white-space: nowrap;
+
+  font-family: var(--font-display);
+  font-size: 11px;
+  color: rgb(251, 113, 133);
+  text-shadow: 0 0 12px rgba(251, 113, 133, 0.6);
+
+  animation: missRise 0.9s ease-out forwards;
+}
+
+@keyframes missRise {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -30%) scale(0.8);
+  }
+
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -140%) scale(1);
+  }
+}
+
+body.is-paused .miss-feedback {
+  animation-play-state: paused;
+}
+
+.results-stats {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.result-stat strong {
+  font-size: 15px;
+}
+
+#accuracy-score {
+  color: var(--signal-strong);
+}
+
+#accuracy-score.is-perfect {
+  color: var(--pink);
+  text-shadow: 0 0 10px rgba(233, 213, 255, 0.5);
+}
+
+@media (max-width: 480px) {
+  .results-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .result-stat strong {
+    font-size: 16px;
+  }
+}

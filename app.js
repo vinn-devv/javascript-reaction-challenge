@@ -38,6 +38,7 @@ const comboCount = document.querySelector(".combo-count");
 const comboMultiplier = document.querySelector(".combo-multiplier");
 const resultStreak = document.querySelector("#result-streak");
 const roundBreakdown = document.querySelector(".round-breakdown");
+const accuracyScore = document.querySelector("#accuracy-score");
 const resultsLabel = document.querySelector("#results-screen .results-label");
 const resultBestStat = resultBestScore
   ? resultBestScore.closest(".result-stat")
@@ -336,6 +337,16 @@ const sfx = {
     });
   },
 
+  miss() {
+    playTone({
+      freq: 210,
+      slideTo: 120,
+      duration: 0.16,
+      type: "sawtooth",
+      volume: 0.05,
+    });
+  },
+
   newBest() {
     playNotes([784, 988, 1175, 1568], {
       step: 0.09,
@@ -373,6 +384,8 @@ let score = 0;
 let combo = 0;
 let maxCombo = 0;
 let isNewBest = false;
+let misses = 0;
+let roundLive = false;
 let comboHideTimer = null;
 
 let isPaused = false;
@@ -624,6 +637,8 @@ function resetRun() {
   score = 0;
   combo = 0;
   maxCombo = 0;
+  misses = 0;
+  roundLive = false;
 
   renderComboBadge(0);
   renderDifficulty(0);
@@ -943,6 +958,16 @@ function showResults() {
     countUpTo(finalScore, score, 900, "");
   }
 
+  if (accuracyScore) {
+    const accuracy = Math.round(
+      (reactionTimes.length / (reactionTimes.length + misses)) * 100,
+    );
+
+    accuracyScore.classList.toggle("is-perfect", accuracy === 100);
+
+    countUpTo(accuracyScore, accuracy, 700, "%");
+  }
+
   countUpTo(averageScore, average);
   countUpTo(fastestScore, fastest);
   countUpTo(resultBestScore, best);
@@ -984,6 +1009,7 @@ function startRound() {
 
   startCountdown(() => {
     gameStatus.textContent = "Watch for the cat...";
+    roundLive = true;
 
     schedule(() => {
       const randomX =
@@ -1028,6 +1054,7 @@ if (startButton) {
     const reaction = Math.round(performance.now() - startTime);
 
     targetReady = false;
+    roundLive = false;
 
     const hitX = target.offsetLeft + target.offsetWidth / 2;
     const hitY = target.offsetTop + target.offsetHeight / 2;
@@ -1281,4 +1308,51 @@ if (pauseButton && pauseScreen) {
       pauseGame();
     }
   });
+}
+
+function showMissFeedback(x, y, label) {
+  const el = document.createElement("div");
+
+  el.className = "miss-feedback";
+  el.textContent = label;
+
+  const marginX = 50;
+  const marginY = 30;
+
+  el.style.left = `${Math.min(Math.max(x, marginX), gameArea.clientWidth - marginX)}px`;
+  el.style.top = `${Math.min(Math.max(y, marginY), gameArea.clientHeight - marginY)}px`;
+
+  gameArea.appendChild(el);
+
+  el.addEventListener("animationend", () => el.remove());
+
+  setTimeout(() => el.remove(), 1000);
+}
+
+if (gameArea) {
+  gameArea.addEventListener(
+    "click",
+    (event) => {
+      if (!roundLive || isPaused) {
+        return;
+      }
+
+      if (targetReady && event.target.closest(".target")) {
+        return;
+      }
+
+      misses++;
+
+      const rect = gameArea.getBoundingClientRect();
+
+      showMissFeedback(
+        event.clientX - rect.left,
+        event.clientY - rect.top,
+        targetReady ? "MISS" : "TOO EARLY",
+      );
+
+      sfx.miss();
+    },
+    true,
+  );
 }
