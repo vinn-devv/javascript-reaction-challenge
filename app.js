@@ -114,30 +114,42 @@ if (catCanvas && catSource) {
   const cw = catCanvas.width;
   const ch = catCanvas.height;
 
-  const BLACK_CUTOFF = 40;
-  const FEATHER_CUTOFF = 75;
+  const BLACK_CUTOFF = 60;
+  const FEATHER_CUTOFF = 95;
+  const MIN_ALPHA = 60; // anything fainter than this is dropped (kills the box fringe)
+
+  let hasNativeAlpha = null;
 
   const renderCatFrame = () => {
     if (catSource.readyState >= 2 && !catSource.paused) {
+      ctx.clearRect(0, 0, cw, ch);
       ctx.drawImage(catSource, 0, 0, cw, ch);
 
       const frame = ctx.getImageData(0, 0, cw, ch);
       const d = frame.data;
 
+      // If the corner is already transparent, the webm has real alpha
+      // and we must not luminance-key it a second time.
+      if (hasNativeAlpha === null) {
+        hasNativeAlpha = d[3] < 250 && d[(cw - 1) * 4 + 3] < 250;
+      }
+
       for (let i = 0; i < d.length; i += 4) {
-        const r = d[i];
-        const g = d[i + 1];
-        const b = d[i + 2];
+        let a = d[i + 3];
 
-        const lum = (r + g + b) / 3;
+        if (!hasNativeAlpha) {
+          const lum = (d[i] + d[i + 1] + d[i + 2]) / 3;
 
-        if (lum <= BLACK_CUTOFF) {
-          d[i + 3] = 0;
-        } else if (lum < FEATHER_CUTOFF) {
-          d[i + 3] = Math.round(
-            ((lum - BLACK_CUTOFF) / (FEATHER_CUTOFF - BLACK_CUTOFF)) * 255,
-          );
+          if (lum <= BLACK_CUTOFF) {
+            a = 0;
+          } else if (lum < FEATHER_CUTOFF) {
+            a = Math.round(
+              ((lum - BLACK_CUTOFF) / (FEATHER_CUTOFF - BLACK_CUTOFF)) * 255,
+            );
+          }
         }
+
+        d[i + 3] = a < MIN_ALPHA ? 0 : a;
       }
 
       ctx.putImageData(frame, 0, 0);
@@ -1077,11 +1089,19 @@ function startRound() {
     roundLive = true;
 
     schedule(() => {
+      // keep the cat (and its glow) away from the edges so the
+      // game area's overflow:hidden never cuts the shadow off
+      const EDGE_PAD = 16;
+
       const randomX =
-        Math.random() * (gameArea.clientWidth - target.offsetWidth);
+        EDGE_PAD +
+        Math.random() *
+          (gameArea.clientWidth - target.offsetWidth - EDGE_PAD * 2);
 
       const randomY =
-        Math.random() * (gameArea.clientHeight - target.offsetHeight);
+        EDGE_PAD +
+        Math.random() *
+          (gameArea.clientHeight - target.offsetHeight - EDGE_PAD * 2);
 
       target.style.left = `${randomX}px`;
       target.style.top = `${randomY}px`;

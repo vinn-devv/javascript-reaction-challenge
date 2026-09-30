@@ -431,6 +431,15 @@ button:focus-visible {
   -webkit-tap-highlight-color: transparent;
   box-shadow: none;
   filter: none;
+  outline: none;
+  border-radius: 0;
+}
+
+/* no rectangular focus frame around the cat (the glow below replaces it) */
+.target:focus,
+.target:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 .target.is-visible {
