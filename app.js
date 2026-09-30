@@ -33,7 +33,10 @@ const catSource = document.querySelector(".cat-source");
 const scoreValue = document.querySelector(".score-value");
 const finalScore = document.querySelector("#final-score");
 
-/* ---------- Home music + sound button ---------- */
+const comboBadge = document.querySelector(".combo-badge");
+const comboCount = document.querySelector(".combo-count");
+const comboMultiplier = document.querySelector(".combo-multiplier");
+const resultStreak = document.querySelector("#result-streak");
 
 function playHomeMusic() {
   if (!homeMusic) {
@@ -52,7 +55,6 @@ function updateSoundButton() {
     return;
   }
 
-  // "ON" only if music is actually audible (not blocked, paused, or muted)
   const isOn = !homeMusic.paused && !homeMusic.muted;
 
   soundButton.classList.toggle("is-off", !isOn);
@@ -83,15 +85,12 @@ if (soundButton && homeMusic) {
     updateSoundButton();
   });
 
-  // Keep the button in sync with the real playback state
   homeMusic.addEventListener("play", updateSoundButton);
   homeMusic.addEventListener("pause", updateSoundButton);
   homeMusic.addEventListener("volumechange", updateSoundButton);
 
   updateSoundButton();
 }
-
-/* ---------- Cat video -> canvas with black keyed out ---------- */
 
 if (catCanvas && catSource) {
   const ctx = catCanvas.getContext("2d", {
@@ -141,7 +140,6 @@ if (catCanvas && catSource) {
     }
   };
 
-  // Guard so only one render loop ever runs
   let catLoopRunning = false;
 
   const startCatLoop = () => {
@@ -155,13 +153,10 @@ if (catCanvas && catSource) {
 
   catSource.addEventListener("playing", startCatLoop);
 
-  // Video may already be playing before this listener was attached
   if (!catSource.paused) {
     startCatLoop();
   }
 }
-
-/* ---------- Sounds ---------- */
 
 const meowSound = new Audio("assets/meow.mp3");
 
@@ -194,8 +189,6 @@ function stopMeow() {
   }
 }
 
-/* ---------- State ---------- */
-
 const savedBest = localStorage.getItem("best");
 
 const homeBest = document.querySelector(".home-best");
@@ -206,13 +199,16 @@ if (homeBest) {
 
 let startTime = 0;
 let best = null;
-let isPlaying = false; // true for the whole 5-round run, not just one round
+let isPlaying = false;
 let targetReady = false;
 
 let round = 0;
 const TOTAL_ROUNDS = 5;
 let reactionTimes = [];
 let score = 0;
+let combo = 0;
+let maxCombo = 0;
+let comboHideTimer = null;
 
 const roundDotsEl = document.querySelector(".round-dots");
 let roundDots = [];
@@ -270,9 +266,6 @@ const difficulty = {
   },
 };
 
-/* ---------- Scoring + performance feedback ---------- */
-
-// Ratings line up with the results-screen thresholds (500ms / 700ms)
 const RATINGS = [
   { max: 250, label: "LIGHTNING!", tier: "lightning" },
   { max: 350, label: "FAST!", tier: "fast" },
@@ -283,22 +276,83 @@ const RATINGS = [
 
 const MAX_POINTS_PER_ROUND = 200;
 
-function getRating(reaction) {
+function getRating(reaction, multiplier = 1) {
   const rating = RATINGS.find((r) => reaction < r.max);
 
-  // 1000ms or slower = 0 pts, every 5ms faster = +1 pt
-  const points = Math.max(
+  const basePoints = Math.max(
     0,
     Math.min(MAX_POINTS_PER_ROUND, Math.round((1000 - reaction) / 5)),
   );
 
-  return { ...rating, points };
+  return { ...rating, multiplier, points: Math.round(basePoints * multiplier) };
+}
+
+const COMBO_THRESHOLD_MS = 500;
+const COMBO_STEP = 0.5;
+const MAX_MULTIPLIER = 3;
+const COMBO_LOST_MS = 900;
+
+function getMultiplier(streak) {
+  return Math.min(1 + Math.max(streak - 1, 0) * COMBO_STEP, MAX_MULTIPLIER);
+}
+
+function renderComboBadge(previous) {
+  if (!comboBadge) {
+    return;
+  }
+
+  clearTimeout(comboHideTimer);
+
+  comboBadge.classList.remove("is-lost", "is-bump");
+
+  if (combo >= 2) {
+    comboCount.textContent = `COMBO ${combo}`;
+    comboMultiplier.textContent = `x${getMultiplier(combo)}`;
+
+    void comboBadge.offsetWidth;
+
+    comboBadge.classList.add("is-active", "is-bump");
+
+    return;
+  }
+
+  if (previous >= 2) {
+    comboCount.textContent = "COMBO LOST";
+    comboMultiplier.textContent = "";
+
+    comboBadge.classList.add("is-active", "is-lost");
+
+    comboHideTimer = setTimeout(() => {
+      comboBadge.classList.remove("is-active", "is-lost");
+    }, COMBO_LOST_MS);
+
+    return;
+  }
+
+  comboBadge.classList.remove("is-active");
+}
+
+function updateCombo(reaction) {
+  const previous = combo;
+
+  if (reaction < COMBO_THRESHOLD_MS) {
+    combo++;
+    maxCombo = Math.max(maxCombo, combo);
+  } else {
+    combo = 0;
+  }
+
+  renderComboBadge(previous);
 }
 
 function resetRun() {
   round = 0;
   reactionTimes = [];
   score = 0;
+  combo = 0;
+  maxCombo = 0;
+
+  renderComboBadge(0);
 
   if (scoreValue) {
     scoreValue.textContent = "0";
@@ -338,7 +392,14 @@ function showHitFeedback(rating, x, y) {
 
   el.append(label, points);
 
-  // Keep the popup inside the game area even if the cat is near an edge
+  if (rating.multiplier > 1) {
+    const bonus = document.createElement("span");
+    bonus.className = "hit-feedback-bonus";
+    bonus.textContent = `x${rating.multiplier} COMBO`;
+
+    el.append(bonus);
+  }
+
   const marginX = 70;
   const marginY = 50;
 
@@ -359,11 +420,8 @@ function showHitFeedback(rating, x, y) {
 
   el.addEventListener("animationend", () => el.remove());
 
-  // Fallback in case animations are disabled
   setTimeout(() => el.remove(), 1200);
 }
-
-/* ---------- Mouse glow ---------- */
 
 if (mouseGlow) {
   let targetX = window.innerWidth / 2;
@@ -391,14 +449,10 @@ if (mouseGlow) {
   requestAnimationFrame(followCursor);
 }
 
-/* ---------- Game ---------- */
-
-/* ---------- Countdown ---------- */
-
-const COUNTDOWN_STEP_MS = 900; // how long each of 3 / 2 / 1 stays on screen
-const COUNTDOWN_GO_MS = 700; // how long "GO!" stays on screen
-const ROUND_INTRO_MS = 800; // "ROUND N" flash for rounds 2-5
-const FULL_COUNTDOWN_EVERY_ROUND = false; // true = 3-2-1-GO! before every round
+const COUNTDOWN_STEP_MS = 900;
+const COUNTDOWN_GO_MS = 700;
+const ROUND_INTRO_MS = 800;
+const FULL_COUNTDOWN_EVERY_ROUND = false;
 
 let countdownText = null;
 
@@ -416,7 +470,6 @@ if (gameArea) {
 }
 
 function showCountdownStep(text, variant = "") {
-  // Reset classes and force a reflow so the pop animation restarts each step
   countdownText.className = "countdown-text";
   countdownText.textContent = text;
 
@@ -439,7 +492,6 @@ function hideCountdown() {
 function startCountdown(callback) {
   gameArea.classList.add("is-counting");
 
-  // Rounds 2-5 get a quick "ROUND N" beat instead of a full 3-2-1
   if (round > 1 && !FULL_COUNTDOWN_EVERY_ROUND) {
     showCountdownStep(`ROUND ${round}`, "is-round");
 
@@ -536,12 +588,15 @@ function showResults() {
 
   const fastest = Math.min(...reactionTimes);
 
-  // Mark all five dots as done
   updateRoundDots(TOTAL_ROUNDS + 1);
 
   updateResultReaction(average);
 
   resultsScreen.style.display = "flex";
+
+  if (resultStreak) {
+    resultStreak.textContent = maxCombo;
+  }
 
   if (finalScore) {
     countUpTo(finalScore, score, 900, "");
@@ -553,7 +608,6 @@ function showResults() {
 }
 
 function startRound() {
-  // Starting a fresh run
   if (round >= TOTAL_ROUNDS) {
     resetRun();
   }
@@ -583,7 +637,6 @@ function startRound() {
     gameStatus.textContent = "Watch for the cat...";
 
     setTimeout(() => {
-      // Position first, then reveal
       const randomX =
         Math.random() * (gameArea.clientWidth - target.offsetWidth);
 
@@ -618,7 +671,6 @@ if (startButton) {
     startRound();
   });
 
-  // Registered once, not once per round
   target.addEventListener("click", () => {
     if (!targetReady) {
       return;
@@ -646,7 +698,9 @@ if (startButton) {
 
     reactionTimes.push(reaction);
 
-    const rating = getRating(reaction);
+    updateCombo(reaction);
+
+    const rating = getRating(reaction, getMultiplier(combo));
 
     addScore(rating.points);
 
@@ -663,7 +717,6 @@ if (startButton) {
     }
 
     if (round < TOTAL_ROUNDS) {
-      // isPlaying stays true so a manual Start click can't skip a round
       gameStatus.textContent = "Round complete! Get ready...";
 
       setTimeout(startRound, 800);
@@ -676,8 +729,6 @@ if (startButton) {
     }
   });
 }
-
-/* ---------- Navigation / results buttons ---------- */
 
 if (homeButton) {
   homeButton.addEventListener("click", () => {

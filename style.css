@@ -3164,8 +3164,6 @@ button:focus-visible {
   background: rgba(255, 255, 255, 0.04);
 }
 
-/* ---------- Start countdown ---------- */
-
 .countdown-overlay {
   position: absolute;
   inset: 0;
@@ -3178,7 +3176,6 @@ button:focus-visible {
   pointer-events: none;
 }
 
-/* Hide the small status line while the big countdown is showing */
 .game-area.is-counting .game-status {
   visibility: hidden;
 }
@@ -3287,7 +3284,6 @@ button:focus-visible {
   }
 }
 
-/* Reduced motion: skip the animation but still show each step */
 @media (prefers-reduced-motion: reduce) {
   .countdown-text.is-pop,
   .countdown-text.is-go,
@@ -3296,8 +3292,6 @@ button:focus-visible {
     opacity: 1;
   }
 }
-
-/* ---------- Score + performance feedback ---------- */
 
 .score-value.is-bump {
   animation: scoreBump 0.3s ease-out;
@@ -3438,10 +3432,113 @@ button:focus-visible {
   }
 }
 
-/* Reduced motion: no float, just show the popup briefly */
 @media (prefers-reduced-motion: reduce) {
   .hit-feedback {
     animation: none;
     opacity: 1;
+  }
+}
+
+.combo-badge {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 2;
+
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+
+  padding: 7px 10px;
+
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--signal-strong);
+
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid var(--border-hair-strong);
+  border-radius: 9px;
+  box-shadow: 0 0 18px rgba(168, 85, 247, 0.16);
+
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.combo-badge.is-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.combo-badge.is-bump {
+  animation: comboBump 0.3s ease-out;
+}
+
+.combo-badge.is-lost {
+  color: var(--text-faint);
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--border-hair);
+  box-shadow: none;
+}
+
+.combo-multiplier {
+  font-family: var(--font-display);
+  font-size: 13px;
+  color: var(--pink);
+  text-shadow: 0 0 12px rgba(233, 213, 255, 0.5);
+}
+
+@keyframes comboBump {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.hit-feedback-bonus {
+  display: block;
+  margin-top: 6px;
+
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--signal-strong);
+  text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
+
+.result-streak {
+  margin-top: 12px;
+
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+}
+
+.result-streak b {
+  font-weight: 700;
+  color: var(--signal-strong);
+}
+
+@media (max-width: 480px) {
+  .combo-badge {
+    top: 8px;
+    right: 8px;
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+
+  .combo-multiplier {
+    font-size: 11px;
   }
 }
