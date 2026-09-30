@@ -43,24 +43,36 @@ function playHomeMusic() {
 }
 
 function updateSoundButton() {
-  if (!soundButton || !homeMusic) {
+  if (!soundButton || !homeMusic || !soundText) {
     return;
   }
 
-  if (homeMusic.muted) {
-    soundButton.classList.add("is-off");
-    soundButton.setAttribute("aria-label", "Turn music on");
-    soundText.textContent = "OFF";
-  } else {
-    soundButton.classList.remove("is-off");
-    soundButton.setAttribute("aria-label", "Turn music off");
-    soundText.textContent = "ON";
-  }
+  const isOn = !homeMusic.muted;
+
+  soundButton.classList.toggle("is-off", !isOn);
+
+  soundText.textContent = isOn ? "ON" : "OFF";
+
+  soundButton.setAttribute(
+    "aria-label",
+    isOn ? "Turn music off" : "Turn music on",
+  );
+
+  soundButton.setAttribute("aria-pressed", String(isOn));
 }
 
 if (soundButton && homeMusic) {
   soundButton.addEventListener("click", () => {
-    homeMusic.muted = !homeMusic.muted;
+    if (homeMusic.paused) {
+      homeMusic.muted = false;
+      homeMusic.volume = 0.03;
+
+      homeMusic.play().catch(() => {
+        console.log("Music playback was blocked.");
+      });
+    } else {
+      homeMusic.muted = !homeMusic.muted;
+    }
 
     updateSoundButton();
   });
@@ -69,7 +81,10 @@ if (soundButton && homeMusic) {
 }
 
 if (catCanvas && catSource) {
-  const ctx = catCanvas.getContext("2d", { willReadFrequently: true });
+  const ctx = catCanvas.getContext("2d", {
+    willReadFrequently: true,
+  });
+
   const cw = catCanvas.width;
   const ch = catCanvas.height;
 
@@ -87,6 +102,7 @@ if (catCanvas && catSource) {
         const r = d[i];
         const g = d[i + 1];
         const b = d[i + 2];
+
         const lum = (r + g + b) / 3;
 
         if (lum <= BLACK_CUTOFF) {
@@ -118,16 +134,19 @@ if (catCanvas && catSource) {
 }
 
 const meowSound = new Audio("assets/meow.mp3");
+
 meowSound.preload = "auto";
 meowSound.loop = true;
 
 const resultSound = new Audio();
+
 resultSound.volume = 0.5;
 resultSound.preload = "auto";
 
 function playMeow() {
   try {
     meowSound.currentTime = 0;
+
     meowSound
       .play()
       .catch((err) => console.warn("Meow sound unavailable:", err));
@@ -168,8 +187,11 @@ let roundDots = [];
 if (roundDotsEl) {
   for (let i = 0; i < TOTAL_ROUNDS; i++) {
     const dot = document.createElement("span");
+
     dot.className = "dot";
+
     roundDotsEl.appendChild(dot);
+
     roundDots.push(dot);
   }
 }
@@ -177,6 +199,7 @@ if (roundDotsEl) {
 function updateRoundDots(currentRound) {
   roundDots.forEach((dot, i) => {
     const dotRound = i + 1;
+
     dot.classList.toggle("is-done", dotRound < currentRound);
     dot.classList.toggle("is-current", dotRound === currentRound);
   });
@@ -217,6 +240,7 @@ const difficulty = {
 if (mouseGlow) {
   let targetX = window.innerWidth / 2;
   let targetY = window.innerHeight / 2;
+
   let glowX = targetX;
   let glowY = targetY;
 
@@ -255,7 +279,9 @@ if (startButton) {
     }
 
     round++;
+
     roundCounter.textContent = `Round ${String(round).padStart(2, "0")}`;
+
     updateRoundDots(round);
 
     reactionTime.textContent = "---";
@@ -308,13 +334,16 @@ if (startButton) {
     }
 
     const hitX = target.offsetLeft + target.offsetWidth / 2;
+
     const hitY = target.offsetTop + target.offsetHeight / 2;
 
     gameArea.style.setProperty("--hit-x", `${hitX}px`);
     gameArea.style.setProperty("--hit-y", `${hitY}px`);
 
     gameArea.classList.remove("is-hit");
+
     void gameArea.offsetWidth;
+
     gameArea.classList.add("is-hit");
 
     target.classList.remove("is-visible");
@@ -348,6 +377,7 @@ if (startButton) {
       }, 800);
     } else {
       gameStatus.textContent = "5 rounds complete!";
+
       showResults();
     }
   });
@@ -358,7 +388,9 @@ function countUpTo(el, endValue, duration = 600) {
 
   const tick = (now) => {
     const progress = Math.min((now - startTime) / duration, 1);
+
     const eased = 1 - Math.pow(1 - progress, 3);
+
     const value = Math.round(endValue * eased);
 
     el.textContent = `${value}ms`;
@@ -383,15 +415,21 @@ function updateResultReaction(average) {
 
   if (average < 500) {
     resultGif.src = "assets/Cat Meme GIF.gif";
+
     resultTitle.textContent = "I see, you have fast hands.";
+
     resultSound.src = "assets/dexter-meme.mp3";
   } else if (average <= 700) {
     resultGif.src = "assets/Happy Cat GIF.gif";
+
     resultTitle.textContent = "Absolute nyan! Nice!";
+
     resultSound.src = "assets/happy-cat.mp3";
   } else {
     resultGif.src = "assets/Lemme Think GIF.gif";
+
     resultTitle.textContent = "Is this you?";
+
     resultSound.src = "assets/loading-meme.mp3";
   }
 
@@ -404,6 +442,7 @@ function showResults() {
   const total = reactionTimes.reduce((sum, time) => sum + time, 0);
 
   const average = Math.round(total / reactionTimes.length);
+
   const fastest = Math.min(...reactionTimes);
 
   updateResultReaction(average);
@@ -423,6 +462,7 @@ if (homeButton) {
 
 if (playButton) {
   const urlParams = new URLSearchParams(window.location.search);
+
   const isReturning = urlParams.get("loading") === "true";
 
   if (isReturning) {
