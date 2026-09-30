@@ -30,6 +30,8 @@ const mouseGlow = document.querySelector(".mouse-glow");
 const catCanvas = document.querySelector(".cat-gif");
 const catSource = document.querySelector(".cat-source");
 
+/* ---------- Home music + sound button ---------- */
+
 function playHomeMusic() {
   if (!homeMusic) {
     return;
@@ -47,7 +49,8 @@ function updateSoundButton() {
     return;
   }
 
-  const isOn = !homeMusic.muted;
+  // "ON" only if music is actually audible (not blocked, paused, or muted)
+  const isOn = !homeMusic.paused && !homeMusic.muted;
 
   soundButton.classList.toggle("is-off", !isOn);
 
@@ -77,8 +80,15 @@ if (soundButton && homeMusic) {
     updateSoundButton();
   });
 
+  // Keep the button in sync with the real playback state
+  homeMusic.addEventListener("play", updateSoundButton);
+  homeMusic.addEventListener("pause", updateSoundButton);
+  homeMusic.addEventListener("volumechange", updateSoundButton);
+
   updateSoundButton();
 }
+
+/* ---------- Cat video -> canvas with black keyed out ---------- */
 
 if (catCanvas && catSource) {
   const ctx = catCanvas.getContext("2d", {
@@ -128,10 +138,27 @@ if (catCanvas && catSource) {
     }
   };
 
-  catSource.addEventListener("playing", () => {
+  // Guard so only one render loop ever runs
+  let catLoopRunning = false;
+
+  const startCatLoop = () => {
+    if (catLoopRunning) {
+      return;
+    }
+
+    catLoopRunning = true;
     updateCatFrame();
-  });
+  };
+
+  catSource.addEventListener("playing", startCatLoop);
+
+  // Video may already be playing before this listener was attached
+  if (!catSource.paused) {
+    startCatLoop();
+  }
 }
+
+/* ---------- Sounds ---------- */
 
 const meowSound = new Audio("assets/meow.mp3");
 
@@ -164,6 +191,8 @@ function stopMeow() {
   }
 }
 
+/* ---------- State ---------- */
+
 const savedBest = localStorage.getItem("best");
 
 const homeBest = document.querySelector(".home-best");
@@ -172,9 +201,9 @@ if (homeBest) {
   homeBest.textContent = savedBest !== null ? `${savedBest}ms` : "—";
 }
 
-let startTime;
+let startTime = 0;
 let best = null;
-let isPlaying = false;
+let isPlaying = false; // true for the whole 5-round run, not just one round
 let targetReady = false;
 
 let round = 0;
@@ -237,6 +266,8 @@ const difficulty = {
   },
 };
 
+/* ---------- Mouse glow ---------- */
+
 if (mouseGlow) {
   let targetX = window.innerWidth / 2;
   let targetY = window.innerHeight / 2;
@@ -263,131 +294,32 @@ if (mouseGlow) {
   requestAnimationFrame(followCursor);
 }
 
-if (startButton) {
-  if (savedBest !== null) {
-    best = Number(savedBest);
-    bestScore.textContent = `${best}ms`;
-  }
+/* ---------- Game ---------- */
 
-  startButton.addEventListener("click", () => {
-    if (isPlaying === true) {
-      return;
-    }
+function startCountdown(callback) {
+  let count = 3;
 
-    if (round >= TOTAL_ROUNDS) {
-      round = 0;
-    }
+  gameStatus.classList.add("countdown");
+  gameStatus.textContent = count;
 
-    round++;
+  const countdown = setInterval(() => {
+    count--;
 
-    roundCounter.textContent = `Round ${String(round).padStart(2, "0")}`;
-
-    updateRoundDots(round);
-
-    reactionTime.textContent = "---";
-
-    gameStatus.textContent =
-      round === 1
-        ? "Warm up your paws..."
-        : `Difficulty ${round}/5 — stay sharp...`;
-
-    isPlaying = true;
-
-    console.log("Game started!");
-
-    target.classList.remove("is-visible");
-
-    const currentDifficulty = difficulty[round];
-
-    target.style.width = `${currentDifficulty.catSize}px`;
-
-    const delay =
-      currentDifficulty.minDelay +
-      Math.random() * (currentDifficulty.maxDelay - currentDifficulty.minDelay);
-
-    setTimeout(() => {
-      gameStatus.textContent = "GO!";
-
-      targetReady = true;
-
-      target.classList.add("is-visible");
-
-      playMeow();
-
-      startTime = Date.now();
-
-      const randomX =
-        Math.random() * (gameArea.clientWidth - target.offsetWidth);
-
-      const randomY =
-        Math.random() * (gameArea.clientHeight - target.offsetHeight);
-
-      target.style.left = `${randomX}px`;
-
-      target.style.top = `${randomY}px`;
-    }, delay);
-  });
-
-  target.addEventListener("click", () => {
-    if (!targetReady) {
-      return;
-    }
-
-    const hitX = target.offsetLeft + target.offsetWidth / 2;
-
-    const hitY = target.offsetTop + target.offsetHeight / 2;
-
-    gameArea.style.setProperty("--hit-x", `${hitX}px`);
-    gameArea.style.setProperty("--hit-y", `${hitY}px`);
-
-    gameArea.classList.remove("is-hit");
-
-    void gameArea.offsetWidth;
-
-    gameArea.classList.add("is-hit");
-
-    target.classList.remove("is-visible");
-
-    stopMeow();
-
-    const endTime = Date.now();
-
-    const reaction = endTime - startTime;
-
-    reactionTimes.push(reaction);
-
-    reactionTime.textContent = `${reaction}ms`;
-
-    if (best === null || reaction < best) {
-      best = reaction;
-
-      bestScore.textContent = `${best}ms`;
-
-      localStorage.setItem("best", best);
-    }
-
-    isPlaying = false;
-    targetReady = false;
-
-    if (round < TOTAL_ROUNDS) {
-      gameStatus.textContent = "Round complete! Get ready...";
-
-      setTimeout(() => {
-        startButton.click();
-      }, 800);
+    if (count > 0) {
+      gameStatus.textContent = count;
     } else {
-      gameStatus.textContent = "5 rounds complete!";
-
-      showResults();
+      clearInterval(countdown);
+      gameStatus.classList.remove("countdown");
+      callback();
     }
-  });
+  }, 1000);
 }
 
 function countUpTo(el, endValue, duration = 600) {
-  const startTime = performance.now();
+  const t0 = performance.now();
 
   const tick = (now) => {
-    const progress = Math.min((now - startTime) / duration, 1);
+    const progress = Math.min((now - t0) / duration, 1);
 
     const eased = 1 - Math.pow(1 - progress, 3);
 
@@ -445,6 +377,9 @@ function showResults() {
 
   const fastest = Math.min(...reactionTimes);
 
+  // Mark all five dots as done
+  updateRoundDots(TOTAL_ROUNDS + 1);
+
   updateResultReaction(average);
 
   resultsScreen.style.display = "flex";
@@ -453,6 +388,128 @@ function showResults() {
   countUpTo(fastestScore, fastest);
   countUpTo(resultBestScore, best);
 }
+
+function startRound() {
+  // Starting a fresh run
+  if (round >= TOTAL_ROUNDS) {
+    round = 0;
+    reactionTimes = [];
+  }
+
+  round++;
+
+  isPlaying = true;
+  targetReady = false;
+
+  roundCounter.textContent = `Round ${String(round).padStart(2, "0")}`;
+
+  updateRoundDots(round);
+
+  reactionTime.textContent = "---";
+
+  target.classList.remove("is-visible");
+
+  const currentDifficulty = difficulty[round];
+
+  target.style.width = `${currentDifficulty.catSize}px`;
+
+  const delay =
+    currentDifficulty.minDelay +
+    Math.random() * (currentDifficulty.maxDelay - currentDifficulty.minDelay);
+
+  startCountdown(() => {
+    gameStatus.textContent = "Wait for it...";
+
+    setTimeout(() => {
+      // Position first, then reveal
+      const randomX =
+        Math.random() * (gameArea.clientWidth - target.offsetWidth);
+
+      const randomY =
+        Math.random() * (gameArea.clientHeight - target.offsetHeight);
+
+      target.style.left = `${randomX}px`;
+      target.style.top = `${randomY}px`;
+
+      gameStatus.textContent = "GO!";
+      targetReady = true;
+      target.classList.add("is-visible");
+
+      playMeow();
+
+      startTime = performance.now();
+    }, delay);
+  });
+}
+
+if (startButton) {
+  if (savedBest !== null) {
+    best = Number(savedBest);
+    bestScore.textContent = `${best}ms`;
+  }
+
+  startButton.addEventListener("click", () => {
+    if (isPlaying) {
+      return;
+    }
+
+    startRound();
+  });
+
+  // Registered once, not once per round
+  target.addEventListener("click", () => {
+    if (!targetReady) {
+      return;
+    }
+
+    const reaction = Math.round(performance.now() - startTime);
+
+    targetReady = false;
+
+    const hitX = target.offsetLeft + target.offsetWidth / 2;
+    const hitY = target.offsetTop + target.offsetHeight / 2;
+
+    gameArea.style.setProperty("--hit-x", `${hitX}px`);
+    gameArea.style.setProperty("--hit-y", `${hitY}px`);
+
+    gameArea.classList.remove("is-hit");
+
+    void gameArea.offsetWidth;
+
+    gameArea.classList.add("is-hit");
+
+    target.classList.remove("is-visible");
+
+    stopMeow();
+
+    reactionTimes.push(reaction);
+
+    reactionTime.textContent = `${reaction}ms`;
+
+    if (best === null || reaction < best) {
+      best = reaction;
+
+      bestScore.textContent = `${best}ms`;
+
+      localStorage.setItem("best", best);
+    }
+
+    if (round < TOTAL_ROUNDS) {
+      // isPlaying stays true so a manual Start click can't skip a round
+      gameStatus.textContent = "Round complete! Get ready...";
+
+      setTimeout(startRound, 800);
+    } else {
+      isPlaying = false;
+
+      gameStatus.textContent = "5 rounds complete!";
+
+      showResults();
+    }
+  });
+}
+
+/* ---------- Navigation / results buttons ---------- */
 
 if (homeButton) {
   homeButton.addEventListener("click", () => {
@@ -496,20 +553,26 @@ if (playButton) {
 
 if (playAgainButton) {
   playAgainButton.addEventListener("click", () => {
+    resultSound.pause();
+    resultSound.currentTime = 0;
+
     reactionTimes = [];
     round = 0;
+    isPlaying = false;
 
     resultsScreen.style.display = "none";
 
     reactionTime.textContent = "---";
     gameStatus.textContent = "Ready to pounce?";
 
-    startButton.click();
+    startRound();
   });
 }
 
 if (resultsHomeButton) {
   resultsHomeButton.addEventListener("click", () => {
-    window.location.href = "index.html";
+    resultSound.pause();
+
+    window.location.href = "homescreen.html?loading=true";
   });
 }
