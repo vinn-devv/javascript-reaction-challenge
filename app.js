@@ -38,6 +38,11 @@ const comboCount = document.querySelector(".combo-count");
 const comboMultiplier = document.querySelector(".combo-multiplier");
 const resultStreak = document.querySelector("#result-streak");
 const roundBreakdown = document.querySelector(".round-breakdown");
+const resultsLabel = document.querySelector("#results-screen .results-label");
+const resultBestStat = resultBestScore
+  ? resultBestScore.closest(".result-stat")
+  : null;
+const bestStatBlock = bestScore ? bestScore.closest(".stat-block") : null;
 
 const difficultyEl = document.querySelector(".difficulty");
 const difficultyName = document.querySelector(".difficulty-name");
@@ -330,6 +335,14 @@ const sfx = {
       delay: 0.15,
     });
   },
+
+  newBest() {
+    playNotes([784, 988, 1175, 1568], {
+      step: 0.09,
+      duration: 0.14,
+      type: "triangle",
+    });
+  },
 };
 
 document.addEventListener("click", (event) => {
@@ -359,6 +372,7 @@ let reactionTimes = [];
 let score = 0;
 let combo = 0;
 let maxCombo = 0;
+let isNewBest = false;
 let comboHideTimer = null;
 
 let isPaused = false;
@@ -902,6 +916,19 @@ function showResults() {
 
   renderBreakdown();
 
+  if (resultsLabel) {
+    resultsLabel.textContent = isNewBest ? "NEW BEST!" : "GAME COMPLETE";
+    resultsLabel.classList.toggle("is-new-best", isNewBest);
+  }
+
+  if (resultBestStat) {
+    resultBestStat.classList.toggle("is-new-best", isNewBest);
+  }
+
+  if (isNewBest) {
+    setTimeout(() => sfx.newBest(), 500);
+  }
+
   resultsScreen.style.display = "flex";
 
   if (playAgainButton) {
@@ -927,6 +954,10 @@ function startRound() {
   }
 
   round++;
+
+  if (round === 1) {
+    isNewBest = false;
+  }
 
   renderDifficulty(round);
 
@@ -1038,8 +1069,17 @@ if (startButton) {
 
     if (best === null || reaction < best) {
       best = reaction;
+      isNewBest = true;
 
       bestScore.textContent = `${best}ms`;
+
+      if (bestStatBlock) {
+        bestStatBlock.classList.remove("is-new");
+
+        void bestStatBlock.offsetWidth;
+
+        bestStatBlock.classList.add("is-new");
+      }
 
       localStorage.setItem("best", best);
     }
