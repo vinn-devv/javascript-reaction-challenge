@@ -902,6 +902,12 @@ function updateResultReaction(average) {
   resultSound.currentTime = 0;
 
   resultGif.src = result.gif;
+  resultGif.onerror = () => {
+    resultGif.style.display = "none";
+  };
+  resultGif.onload = () => {
+    resultGif.style.display = "";
+  };
   resultTitle.textContent = result.title;
   resultSound.src = result.sound;
 
