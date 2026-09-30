@@ -42,6 +42,12 @@ const difficultyEl = document.querySelector(".difficulty");
 const difficultyName = document.querySelector(".difficulty-name");
 const difficultyBarsEl = document.querySelector(".difficulty-bars");
 
+const pauseButton = document.querySelector(".pause-btn");
+const pauseScreen = document.querySelector("#pause-screen");
+const resumeButton = document.querySelector("#resume-btn");
+const restartButton = document.querySelector("#restart-btn");
+const quitButton = document.querySelector("#quit-btn");
+
 function playHomeMusic() {
   if (!homeMusic) {
     return;
@@ -353,6 +359,57 @@ let score = 0;
 let combo = 0;
 let maxCombo = 0;
 let comboHideTimer = null;
+
+let isPaused = false;
+let pausedAt = 0;
+let pendingTimers = [];
+
+function schedule(callback, ms) {
+  const timer = {
+    remaining: ms,
+    startedAt: performance.now(),
+    id: null,
+  };
+
+  timer.run = () => {
+    pendingTimers = pendingTimers.filter((item) => item !== timer);
+    callback();
+  };
+
+  timer.id = setTimeout(timer.run, ms);
+  pendingTimers.push(timer);
+
+  return timer;
+}
+
+function clearScheduled() {
+  pendingTimers.forEach((timer) => clearTimeout(timer.id));
+  pendingTimers = [];
+}
+
+function freezeScheduled() {
+  const now = performance.now();
+
+  pendingTimers.forEach((timer) => {
+    clearTimeout(timer.id);
+    timer.remaining = Math.max(0, timer.remaining - (now - timer.startedAt));
+  });
+}
+
+function unfreezeScheduled() {
+  const now = performance.now();
+
+  pendingTimers.forEach((timer) => {
+    timer.startedAt = now;
+    timer.id = setTimeout(timer.run, timer.remaining);
+  });
+}
+
+function updatePauseButton() {
+  if (pauseButton) {
+    pauseButton.disabled = !isPlaying;
+  }
+}
 
 const roundDotsEl = document.querySelector(".round-dots");
 let roundDots = [];
@@ -698,7 +755,7 @@ function startCountdown(callback) {
     showCountdownStep(`ROUND ${round}\n${difficulty[round].label}`, "is-round");
     sfx.roundIntro();
 
-    setTimeout(() => {
+    schedule(() => {
       hideCountdown();
       callback();
     }, ROUND_INTRO_MS);
@@ -711,25 +768,26 @@ function startCountdown(callback) {
   showCountdownStep(count);
   sfx.countdown();
 
-  const countdown = setInterval(() => {
+  const tick = () => {
     count--;
 
     if (count > 0) {
       showCountdownStep(count);
       sfx.countdown();
+      schedule(tick, COUNTDOWN_STEP_MS);
       return;
     }
-
-    clearInterval(countdown);
 
     showCountdownStep("GO!", "is-go");
     sfx.go();
 
-    setTimeout(() => {
+    schedule(() => {
       hideCountdown();
       callback();
     }, COUNTDOWN_GO_MS);
-  }, COUNTDOWN_STEP_MS);
+  };
+
+  schedule(tick, COUNTDOWN_STEP_MS);
 }
 
 function countUpTo(el, endValue, duration = 600, suffix = "ms", from = 0) {
@@ -825,6 +883,8 @@ function startRound() {
   isPlaying = true;
   targetReady = false;
 
+  updatePauseButton();
+
   roundCounter.textContent = `Round ${String(round).padStart(2, "0")}`;
 
   updateRoundDots(round);
@@ -844,7 +904,7 @@ function startRound() {
   startCountdown(() => {
     gameStatus.textContent = "Watch for the cat...";
 
-    setTimeout(() => {
+    schedule(() => {
       const randomX =
         Math.random() * (gameArea.clientWidth - target.offsetWidth);
 
@@ -880,7 +940,7 @@ if (startButton) {
   });
 
   target.addEventListener("click", () => {
-    if (!targetReady) {
+    if (!targetReady || isPaused) {
       return;
     }
 
@@ -937,9 +997,11 @@ if (startButton) {
     if (round < TOTAL_ROUNDS) {
       gameStatus.textContent = "Round complete! Get ready...";
 
-      setTimeout(startRound, 800);
+      schedule(startRound, 800);
     } else {
       isPlaying = false;
+
+      updatePauseButton();
 
       gameStatus.textContent = "5 rounds complete!";
 
@@ -1010,5 +1072,123 @@ if (resultsHomeButton) {
     resultSound.pause();
 
     window.location.href = "homescreen.html?loading=true";
+  });
+}
+
+function openPauseScreen() {
+  pauseScreen.classList.add("is-open");
+  pauseScreen.setAttribute("aria-hidden", "false");
+  document.body.classList.add("is-paused");
+}
+
+function closePauseScreen() {
+  pauseScreen.classList.remove("is-open");
+  pauseScreen.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("is-paused");
+}
+
+function pauseGame() {
+  if (!isPlaying || isPaused) {
+    return;
+  }
+
+  isPaused = true;
+  pausedAt = performance.now();
+
+  freezeScheduled();
+
+  if (targetReady) {
+    meowSound.pause();
+  }
+
+  openPauseScreen();
+
+  if (resumeButton) {
+    resumeButton.focus();
+  }
+}
+
+function resumeGame() {
+  if (!isPaused) {
+    return;
+  }
+
+  isPaused = false;
+
+  if (targetReady) {
+    startTime += performance.now() - pausedAt;
+
+    meowSound.play().catch(() => {
+      console.warn("Meow sound unavailable.");
+    });
+  }
+
+  closePauseScreen();
+  unfreezeScheduled();
+}
+
+function restartGame() {
+  clearScheduled();
+  stopMeow();
+  closePauseScreen();
+
+  isPaused = false;
+  isPlaying = false;
+  targetReady = false;
+
+  target.classList.remove("is-visible");
+  hideCountdown();
+  resetRun();
+
+  reactionTime.textContent = "---";
+  gameStatus.textContent = "Ready to pounce?";
+
+  startRound();
+}
+
+function quitGame() {
+  clearScheduled();
+  stopMeow();
+
+  window.location.href = "homescreen.html?loading=true";
+}
+
+if (pauseButton && pauseScreen) {
+  updatePauseButton();
+
+  pauseButton.addEventListener("click", pauseGame);
+
+  if (resumeButton) {
+    resumeButton.addEventListener("click", resumeGame);
+  }
+
+  if (restartButton) {
+    restartButton.addEventListener("click", restartGame);
+  }
+
+  if (quitButton) {
+    quitButton.addEventListener("click", quitGame);
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if (event.repeat) {
+      return;
+    }
+
+    const key = event.key.toLowerCase();
+
+    if (key === "escape" || key === "p") {
+      if (isPaused) {
+        resumeGame();
+      } else {
+        pauseGame();
+      }
+    }
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      pauseGame();
+    }
   });
 }

@@ -31,7 +31,18 @@
           <div class="difficulty-bars"></div>
         </div>
 
-        <span class="round-counter">Round 00</span>
+        <div class="header-right">
+          <span class="round-counter">Round 00</span>
+
+          <button
+            class="pause-btn"
+            type="button"
+            aria-label="Pause game"
+            disabled
+          >
+            Pause
+          </button>
+        </div>
       </header>
 
       <div class="stat-row">
@@ -71,6 +82,24 @@
 
       <button class="start-btn">Start the Round</button>
     </main>
+
+    <section
+      id="pause-screen"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pause-title"
+      aria-hidden="true"
+    >
+      <div class="pause-card">
+        <p class="results-label">GAME PAUSED</p>
+
+        <h2 id="pause-title">Taking a catnap</h2>
+
+        <button id="resume-btn" type="button">Resume</button>
+        <button id="restart-btn" type="button">Restart</button>
+        <button id="quit-btn" type="button">Quit to Home</button>
+      </div>
+    </section>
 
     <section id="results-screen">
       <div class="results-card">
