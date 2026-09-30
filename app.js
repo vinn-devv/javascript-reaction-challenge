@@ -193,6 +193,146 @@ function stopMeow() {
   }
 }
 
+const SFX_VOLUME = 0.08;
+
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+    if (!AudioContextClass) {
+      return null;
+    }
+
+    audioCtx = new AudioContextClass();
+  }
+
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume();
+  }
+
+  return audioCtx;
+}
+
+function playTone({
+  freq,
+  duration = 0.12,
+  type = "square",
+  volume = SFX_VOLUME,
+  delay = 0,
+  slideTo = null,
+}) {
+  const ctx = getAudioCtx();
+
+  if (!ctx) {
+    return;
+  }
+
+  const start = ctx.currentTime + delay;
+
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, start);
+
+  if (slideTo) {
+    osc.frequency.exponentialRampToValueAtTime(slideTo, start + duration);
+  }
+
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(volume, start + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.start(start);
+  osc.stop(start + duration + 0.02);
+}
+
+function playNotes(
+  notes,
+  { step = 0.07, duration = 0.1, type = "square", volume = SFX_VOLUME } = {},
+) {
+  notes.forEach((freq, i) => {
+    playTone({ freq, duration, type, volume, delay: i * step });
+  });
+}
+
+const HIT_NOTES = {
+  lightning: [784, 1047, 1319],
+  fast: [698, 932],
+  good: [587, 784],
+  okay: [494],
+};
+
+const sfx = {
+  click() {
+    playTone({ freq: 660, duration: 0.05, type: "triangle", volume: 0.06 });
+  },
+
+  countdown() {
+    playTone({ freq: 440, duration: 0.12 });
+  },
+
+  go() {
+    playNotes([523, 784, 1047], { step: 0.08, duration: 0.14 });
+  },
+
+  roundIntro() {
+    playNotes([392, 523], { step: 0.09, duration: 0.1, type: "triangle" });
+  },
+
+  hit(tier) {
+    if (tier === "slow") {
+      playTone({
+        freq: 247,
+        slideTo: 165,
+        duration: 0.2,
+        type: "sawtooth",
+        volume: 0.06,
+      });
+
+      return;
+    }
+
+    playNotes(HIT_NOTES[tier] || HIT_NOTES.good, {
+      step: 0.06,
+      duration: 0.09,
+    });
+  },
+
+  combo(streak) {
+    playTone({
+      freq: 520 + streak * 90,
+      duration: 0.12,
+      type: "triangle",
+      delay: 0.2,
+    });
+  },
+
+  comboLost() {
+    playTone({
+      freq: 420,
+      slideTo: 140,
+      duration: 0.3,
+      type: "sawtooth",
+      volume: 0.06,
+      delay: 0.15,
+    });
+  },
+};
+
+document.addEventListener("click", (event) => {
+  const button = event.target.closest("button");
+
+  if (button && !button.matches(".target, .start-btn, #play-again-btn")) {
+    sfx.click();
+  }
+});
+
 const savedBest = localStorage.getItem("best");
 
 const homeBest = document.querySelector(".home-best");
@@ -556,6 +696,7 @@ function startCountdown(callback) {
 
   if (round > 1 && !FULL_COUNTDOWN_EVERY_ROUND) {
     showCountdownStep(`ROUND ${round}\n${difficulty[round].label}`, "is-round");
+    sfx.roundIntro();
 
     setTimeout(() => {
       hideCountdown();
@@ -568,18 +709,21 @@ function startCountdown(callback) {
   let count = 3;
 
   showCountdownStep(count);
+  sfx.countdown();
 
   const countdown = setInterval(() => {
     count--;
 
     if (count > 0) {
       showCountdownStep(count);
+      sfx.countdown();
       return;
     }
 
     clearInterval(countdown);
 
     showCountdownStep("GO!", "is-go");
+    sfx.go();
 
     setTimeout(() => {
       hideCountdown();
@@ -762,6 +906,8 @@ if (startButton) {
 
     reactionTimes.push(reaction);
 
+    const previousCombo = combo;
+
     updateCombo(reaction);
 
     const rating = getRating(reaction, getMultiplier(combo));
@@ -769,6 +915,14 @@ if (startButton) {
     addScore(rating.points);
 
     showHitFeedback(rating, hitX, hitY);
+
+    sfx.hit(rating.tier);
+
+    if (rating.multiplier > 1) {
+      sfx.combo(combo);
+    } else if (previousCombo >= 2) {
+      sfx.comboLost();
+    }
 
     reactionTime.textContent = `${reaction}ms`;
 
