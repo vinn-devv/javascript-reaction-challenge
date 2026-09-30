@@ -580,7 +580,11 @@ function getRating(reaction, multiplier = 1) {
     Math.min(MAX_POINTS_PER_ROUND, Math.round((1000 - reaction) / 5)),
   );
 
-  return { ...rating, multiplier, points: Math.round(basePoints * multiplier) };
+  return {
+    ...rating,
+    multiplier,
+    points: Math.round(basePoints * multiplier * getMode().scoreMult),
+  };
 }
 
 const COMBO_THRESHOLD_MS = 500;
@@ -966,7 +970,9 @@ function showResults() {
   renderBreakdown();
 
   if (resultsLabel) {
-    resultsLabel.textContent = isNewBest ? "NEW BEST!" : "GAME COMPLETE";
+    resultsLabel.textContent = isNewBest
+      ? "NEW BEST!"
+      : `GAME COMPLETE - ${getMode().label}`;
     resultsLabel.classList.toggle("is-new-best", isNewBest);
   }
 
@@ -1044,11 +1050,15 @@ function startRound() {
 
   const currentDifficulty = difficulty[round];
 
-  target.style.width = `${currentDifficulty.catSize}px`;
+  const mode = getMode();
+
+  target.style.width = `${Math.round(currentDifficulty.catSize * mode.sizeScale)}px`;
 
   const delay =
-    currentDifficulty.minDelay +
-    Math.random() * (currentDifficulty.maxDelay - currentDifficulty.minDelay);
+    (currentDifficulty.minDelay +
+      Math.random() *
+        (currentDifficulty.maxDelay - currentDifficulty.minDelay)) *
+    mode.delayScale;
 
   startCountdown(() => {
     gameStatus.textContent = "Watch for the cat...";
@@ -1620,4 +1630,85 @@ if (achievementsBtn && achievementsScreen) {
       closeAchievements();
     }
   });
+}
+
+const MODES = {
+  easy: {
+    id: "easy",
+    label: "EASY",
+    sizeScale: 1.25,
+    delayScale: 1.3,
+    scoreMult: 0.8,
+    hint: "Bigger cat, longer waits, x0.8 points",
+  },
+  normal: {
+    id: "normal",
+    label: "NORMAL",
+    sizeScale: 1,
+    delayScale: 1,
+    scoreMult: 1,
+    hint: "The classic run, x1 points",
+  },
+  hard: {
+    id: "hard",
+    label: "HARD",
+    sizeScale: 0.8,
+    delayScale: 0.75,
+    scoreMult: 1.25,
+    hint: "Tiny cat, quick spawns, x1.25 points",
+  },
+};
+
+function getMode() {
+  let key = "normal";
+
+  try {
+    key = localStorage.getItem("mode") || "normal";
+  } catch (err) {
+    key = "normal";
+  }
+
+  return MODES[key] || MODES.normal;
+}
+
+function setMode(key) {
+  try {
+    localStorage.setItem("mode", key);
+  } catch (err) {
+    console.warn("Could not save mode:", err);
+  }
+}
+
+const modeButtons = document.querySelectorAll(".mode-btn");
+const modeHint = document.querySelector(".mode-hint");
+const modeTag = document.querySelector(".mode-tag");
+
+function renderModeSelect() {
+  const current = getMode();
+
+  modeButtons.forEach((button) => {
+    const isActive = button.dataset.mode === current.id;
+
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-checked", String(isActive));
+  });
+
+  if (modeHint) {
+    modeHint.textContent = current.hint;
+  }
+}
+
+if (modeButtons.length > 0) {
+  renderModeSelect();
+
+  modeButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      setMode(button.dataset.mode);
+      renderModeSelect();
+    });
+  });
+}
+
+if (modeTag) {
+  modeTag.textContent = `MODE: ${getMode().label}`;
 }
