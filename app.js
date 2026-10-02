@@ -2421,6 +2421,13 @@ if (settingsScreen) {
       const key = toggle.dataset.setting;
       const value = !settings[key];
 
+      // the switch moves its slider too: off = empty bar, on = full bar
+      const volumeKey = { music: "musicVolume", sfx: "sfxVolume" }[key];
+
+      if (volumeKey) {
+        saveSetting(volumeKey, value ? 1 : 0);
+      }
+
       saveSetting(key, value);
 
       if (key === "music") {
@@ -2451,16 +2458,21 @@ document.querySelectorAll(".volume-slider[data-volume]").forEach((slider) => {
     const key = slider.dataset.volume;
     const percent = Number(slider.value);
 
+    // each slider drives its own switch: 0 turns it off, any sound turns it on
+    const switchKey = key === "musicVolume" ? "music" : "sfx";
+    const shouldBeOn = percent > 0;
+
     slider.style.setProperty("--fill", `${percent}%`);
     saveSetting(key, percent / 100);
 
-    if (
-      key === "musicVolume" &&
-      settings.music &&
-      homeMusic &&
-      homeMusic.paused
-    ) {
-      playHomeMusic();
+    if (settings[switchKey] !== shouldBeOn) {
+      saveSetting(switchKey, shouldBeOn);
+
+      if (switchKey === "music") {
+        applyMusicSetting(shouldBeOn);
+      }
+
+      renderSettings();
     }
   });
 
