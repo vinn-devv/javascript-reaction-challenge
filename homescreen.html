@@ -65,9 +65,68 @@
           aria-hidden="true"
         ></span>
 
+        <div class="mascot-wrap">
+          <svg
+            class="mascot"
+            viewBox="0 0 16 12"
+            width="80"
+            height="60"
+            shape-rendering="crispEdges"
+            aria-hidden="true"
+          >
+            <g class="mascot-tail">
+              <rect class="mascot-body" x="15" y="6" width="1" height="1" />
+              <rect class="mascot-body" x="15" y="7" width="1" height="1" />
+              <rect class="mascot-body" x="15" y="8" width="1" height="1" />
+              <rect class="mascot-body" x="14" y="9" width="2" height="1" />
+            </g>
+            <rect class="mascot-body" x="2" y="0" width="2" height="1" />
+            <rect class="mascot-body" x="12" y="0" width="2" height="1" />
+            <rect class="mascot-body" x="2" y="1" width="1" height="1" />
+            <rect class="mascot-body" x="5" y="1" width="1" height="1" />
+            <rect class="mascot-body" x="10" y="1" width="1" height="1" />
+            <rect class="mascot-body" x="13" y="1" width="1" height="1" />
+            <rect class="mascot-body" x="2" y="2" width="12" height="1" />
+            <rect class="mascot-body" x="2" y="3" width="2" height="1" />
+            <rect class="mascot-body" x="5" y="3" width="6" height="1" />
+            <rect class="mascot-body" x="12" y="3" width="2" height="1" />
+            <rect class="mascot-body" x="2" y="4" width="2" height="1" />
+            <rect class="mascot-body" x="5" y="4" width="6" height="1" />
+            <rect class="mascot-body" x="12" y="4" width="2" height="1" />
+            <rect class="mascot-body" x="2" y="5" width="5" height="1" />
+            <rect class="mascot-body" x="9" y="5" width="5" height="1" />
+            <rect class="mascot-body" x="2" y="6" width="4" height="1" />
+            <rect class="mascot-body" x="7" y="6" width="2" height="1" />
+            <rect class="mascot-body" x="10" y="6" width="4" height="1" />
+            <rect class="mascot-body" x="3" y="7" width="10" height="1" />
+            <rect class="mascot-body" x="2" y="8" width="12" height="1" />
+            <rect class="mascot-body" x="2" y="9" width="12" height="1" />
+            <rect class="mascot-body" x="3" y="10" width="10" height="1" />
+            <rect class="mascot-inner" x="3" y="1" width="2" height="1" />
+            <rect class="mascot-inner" x="11" y="1" width="2" height="1" />
+            <rect class="mascot-inner" x="3" y="11" width="2" height="1" />
+            <rect class="mascot-inner" x="11" y="11" width="2" height="1" />
+            <g class="mascot-eyes">
+              <rect class="mascot-eye" x="4" y="3" width="1" height="1" />
+              <rect class="mascot-eye" x="11" y="3" width="1" height="1" />
+              <rect class="mascot-eye" x="4" y="4" width="1" height="1" />
+              <rect class="mascot-eye" x="11" y="4" width="1" height="1" />
+            </g>
+            <rect class="mascot-inner" x="7" y="5" width="2" height="1" />
+            <rect class="mascot-eye" x="6" y="6" width="1" height="1" />
+            <rect class="mascot-eye" x="9" y="6" width="1" height="1" />
+          </svg>
+        </div>
+
         <h1>Paw Reflex</h1>
 
         <p class="tagline">Let's see what those paws can do.</p>
+
+        <ol class="how-to" aria-label="How to play">
+          <li><b>1</b> Wait for the cat</li>
+          <li><b>2</b> Click it fast</li>
+          <li><b>3</b> Survive 5 rounds</li>
+        </ol>
 
         <div class="mode-select" role="radiogroup" aria-label="Difficulty mode">
           <button
@@ -103,9 +162,26 @@
 
         <button class="play-btn">Play now</button>
 
-        <p class="home-best-row">
-          Fastest reaction: <span class="home-best">—</span>
-        </p>
+        <div class="home-stats">
+          <p class="home-stats-mode"></p>
+
+          <div class="home-stat-row">
+            <div class="home-stat">
+              <span>Total games</span>
+              <strong class="home-stat-games">0</strong>
+            </div>
+
+            <div class="home-stat">
+              <span>Fastest</span>
+              <strong class="home-stat-fastest">—</strong>
+            </div>
+
+            <div class="home-stat">
+              <span>High score</span>
+              <strong class="home-stat-score">—</strong>
+            </div>
+          </div>
+        </div>
 
         <div class="home-links">
           <button class="achievements-btn" type="button">

@@ -1882,6 +1882,11 @@ if (modeButtons.length > 0) {
     button.addEventListener("click", () => {
       setMode(button.dataset.mode);
       renderModeSelect();
+      renderHomeStats();
+
+      replayAnimation(button, "is-picked");
+      replayAnimation(modeHint, "is-changing");
+      replayAnimation(homeStats, "is-changing");
     });
   });
 }
@@ -2040,6 +2045,53 @@ function getTotalGames() {
     return 0;
   }
 }
+
+const homeStats = document.querySelector(".home-stats");
+
+function replayAnimation(el, className) {
+  if (!el) {
+    return;
+  }
+
+  el.classList.remove(className);
+
+  void el.offsetWidth;
+
+  el.classList.add(className);
+}
+
+function renderHomeStats() {
+  if (!homeStats) {
+    return;
+  }
+
+  const mode = getMode();
+  const record = loadRecords()[mode.id];
+
+  const caption = homeStats.querySelector(".home-stats-mode");
+  const games = homeStats.querySelector(".home-stat-games");
+  const fastest = homeStats.querySelector(".home-stat-fastest");
+  const highScore = homeStats.querySelector(".home-stat-score");
+
+  if (caption) {
+    caption.textContent = `${mode.label} RECORDS`;
+  }
+
+  if (games) {
+    games.textContent = String(getTotalGames());
+  }
+
+  if (fastest) {
+    fastest.textContent = record.fastest === null ? "—" : `${record.fastest}ms`;
+  }
+
+  if (highScore) {
+    highScore.textContent =
+      record.highScore === null ? "—" : String(record.highScore);
+  }
+}
+
+renderHomeStats();
 
 const recordsBtn = document.querySelector(".records-btn");
 const recordsScreen = document.querySelector("#records-screen");
