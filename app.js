@@ -1389,6 +1389,59 @@ if (homeButton) {
   });
 }
 
+const LOADING_MESSAGES = [
+  "Warming up paws...",
+  "Stretching whiskers...",
+  "Preparing the reflex test...",
+];
+
+const LOADING_FADE_MS = 250;
+const LOADING_MESSAGE_MS = 420;
+
+let loadingMessageTimer = null;
+
+function showLoading() {
+  const text = loadingScreen.querySelector(".loading-text");
+  let index = 0;
+
+  clearInterval(loadingMessageTimer);
+
+  if (text) {
+    text.textContent = LOADING_MESSAGES[0];
+
+    loadingMessageTimer = setInterval(() => {
+      index = (index + 1) % LOADING_MESSAGES.length;
+
+      text.classList.add("is-swapping");
+
+      setTimeout(() => {
+        text.textContent = LOADING_MESSAGES[index];
+        text.classList.remove("is-swapping");
+      }, 150);
+    }, LOADING_MESSAGE_MS);
+  }
+
+  loadingScreen.style.display = "flex";
+
+  // next frame, so the fade-in transition actually runs
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => loadingScreen.classList.add("is-visible"));
+  });
+}
+
+function hideLoading(onDone) {
+  loadingScreen.classList.remove("is-visible");
+
+  setTimeout(() => {
+    clearInterval(loadingMessageTimer);
+    loadingScreen.style.display = "none";
+
+    if (onDone) {
+      onDone();
+    }
+  }, LOADING_FADE_MS);
+}
+
 if (playButton) {
   const urlParams = new URLSearchParams(window.location.search);
 
@@ -1396,14 +1449,15 @@ if (playButton) {
 
   if (isReturning) {
     homeScreen.style.display = "none";
-    loadingScreen.style.display = "flex";
+    showLoading();
 
     setTimeout(() => {
-      loadingScreen.style.display = "none";
-      homeScreen.style.display = "block";
+      hideLoading(() => {
+        homeScreen.style.display = "block";
 
-      playHomeMusic();
-    }, 1200);
+        playHomeMusic();
+      });
+    }, 1000);
   } else {
     playHomeMusic();
   }
@@ -1415,7 +1469,10 @@ if (playButton) {
     }
 
     homeScreen.style.display = "none";
-    loadingScreen.style.display = "flex";
+    showLoading();
+
+    // fade out just before leaving so the page change isn't abrupt
+    setTimeout(() => loadingScreen.classList.remove("is-visible"), 950);
 
     setTimeout(() => {
       window.location.href = "index.html";

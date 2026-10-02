@@ -298,8 +298,53 @@
       </div>
     </section>
 
-    <div id="game-loading">
+    <div id="game-loading" role="status" aria-live="polite">
       <div class="loading-den">
+        <span class="loading-aura" aria-hidden="true"></span>
+        <i
+          class="spark star"
+          style="--x: 10%; --y: 22%; --d: 0s; --t: 3.4s; --z: 1"
+        ></i>
+        <i
+          class="spark star"
+          style="--x: 86%; --y: 18%; --d: 0.6s; --t: 3.8s; --z: 1.3"
+        ></i>
+        <i
+          class="spark star"
+          style="--x: 20%; --y: 74%; --d: 1.1s; --t: 3.2s; --z: 1"
+        ></i>
+        <i
+          class="spark star"
+          style="--x: 80%; --y: 70%; --d: 0.3s; --t: 4s; --z: 1.3"
+        ></i>
+        <i
+          class="spark star"
+          style="--x: 50%; --y: 4%; --d: 1.6s; --t: 3.6s; --z: 0.8"
+        ></i>
+        <i
+          class="spark star"
+          style="--x: 48%; --y: 92%; --d: 0.9s; --t: 3.9s; --z: 0.8"
+        ></i>
+        <i
+          class="spark paw-spark"
+          style="--x: 4%; --y: 48%; --d: 0.2s; --t: 4.2s; --s: 0.5"
+          ><i class="paw"></i
+        ></i>
+        <i
+          class="spark paw-spark"
+          style="--x: 90%; --y: 46%; --d: 1.3s; --t: 4.6s; --s: 0.45"
+          ><i class="paw"></i
+        ></i>
+        <i
+          class="spark paw-spark"
+          style="--x: 26%; --y: 10%; --d: 0.8s; --t: 4s; --s: 0.4"
+          ><i class="paw"></i
+        ></i>
+        <i
+          class="spark paw-spark"
+          style="--x: 70%; --y: 88%; --d: 1.8s; --t: 4.4s; --s: 0.4"
+          ><i class="paw"></i
+        ></i>
         <img
           class="loading-gif"
           src="https://media.tenor.com/aH6qp6K6lO4AAAAm/apple-apple-cat.webp"
@@ -310,11 +355,16 @@
 
       <div class="loading-logo">Paw Reflex</div>
 
-      <div class="loading-bar">
-        <span></span>
+      <div class="loading-bar" aria-hidden="true">
+        <span style="--i: 0"></span><span style="--i: 1"></span
+        ><span style="--i: 2"></span><span style="--i: 3"></span
+        ><span style="--i: 4"></span><span style="--i: 5"></span
+        ><span style="--i: 6"></span><span style="--i: 7"></span
+        ><span style="--i: 8"></span><span style="--i: 9"></span
+        ><span style="--i: 10"></span><span style="--i: 11"></span>
       </div>
 
-      <div class="loading-text">Warming up paws</div>
+      <p class="loading-text">Warming up paws...</p>
     </div>
 
     <audio id="home-music" loop preload="auto">
