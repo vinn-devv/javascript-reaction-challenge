@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="style.css" />
   </head>
 
-  <body>
+  <body class="game-page">
     <div class="mouse-glow"></div>
 
     <div class="container" aria-hidden="true">
@@ -121,6 +121,16 @@
             <div>
               <strong>Sound effects</strong>
               <span>Clicks, hits and countdown</span>
+              <input
+                class="volume-slider"
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value="100"
+                data-volume="sfxVolume"
+                aria-label="Sound effects volume"
+              />
             </div>
             <button
               class="toggle"
@@ -151,6 +161,10 @@
             </button>
           </li>
         </ul>
+
+        <p class="settings-hint">
+          Space: start / catch &middot; P or Esc: pause
+        </p>
 
         <button id="settings-close-btn" type="button">Close</button>
       </div>

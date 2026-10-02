@@ -148,7 +148,7 @@
 
           <div class="home-stat-row">
             <div class="home-stat">
-              <span>Total games</span>
+              <span>Games</span>
               <strong class="home-stat-games">0</strong>
             </div>
 
@@ -226,6 +226,16 @@
             <div>
               <strong>Music</strong>
               <span>Home screen soundtrack</span>
+              <input
+                class="volume-slider"
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value="40"
+                data-volume="musicVolume"
+                aria-label="Music volume"
+              />
             </div>
             <button
               class="toggle"
@@ -243,6 +253,16 @@
             <div>
               <strong>Sound effects</strong>
               <span>Clicks, hits and countdown</span>
+              <input
+                class="volume-slider"
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value="100"
+                data-volume="sfxVolume"
+                aria-label="Sound effects volume"
+              />
             </div>
             <button
               class="toggle"

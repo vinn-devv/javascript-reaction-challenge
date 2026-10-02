@@ -57,23 +57,62 @@ const resumeButton = document.querySelector("#resume-btn");
 const restartButton = document.querySelector("#restart-btn");
 const quitButton = document.querySelector("#quit-btn");
 
-const DEFAULT_SETTINGS = { music: true, sfx: true, effects: true };
+// Respect the OS "reduce motion" preference until the player chooses otherwise
+const prefersReducedMotion =
+  typeof window.matchMedia === "function" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const DEFAULT_SETTINGS = {
+  music: true,
+  sfx: true,
+  effects: !prefersReducedMotion,
+  musicVolume: 0.4,
+  sfxVolume: 1,
+};
+
+function clampVolume(value, fallback) {
+  const number = Number(value);
+
+  return Number.isFinite(number) ? Math.min(1, Math.max(0, number)) : fallback;
+}
 
 function loadSettings() {
+  let saved = null;
+
   try {
-    return {
-      ...DEFAULT_SETTINGS,
-      ...JSON.parse(localStorage.getItem("settings")),
-    };
+    saved = JSON.parse(localStorage.getItem("settings"));
   } catch (err) {
-    return { ...DEFAULT_SETTINGS };
+    saved = null;
   }
+
+  if (!saved || typeof saved !== "object" || Array.isArray(saved)) {
+    saved = {};
+  }
+
+  return {
+    music:
+      typeof saved.music === "boolean" ? saved.music : DEFAULT_SETTINGS.music,
+    sfx: typeof saved.sfx === "boolean" ? saved.sfx : DEFAULT_SETTINGS.sfx,
+    effects:
+      typeof saved.effects === "boolean"
+        ? saved.effects
+        : DEFAULT_SETTINGS.effects,
+    musicVolume: clampVolume(saved.musicVolume, DEFAULT_SETTINGS.musicVolume),
+    sfxVolume: clampVolume(saved.sfxVolume, DEFAULT_SETTINGS.sfxVolume),
+  };
 }
 
 let settings = loadSettings();
 
 function applySettings() {
   document.body.classList.toggle("no-effects", !settings.effects);
+
+  meowSound.volume = settings.sfxVolume;
+  resultSound.volume = 0.5 * settings.sfxVolume;
+
+  if (homeMusic) {
+    homeMusic.volume = settings.musicVolume;
+  }
 
   if (!settings.sfx) {
     meowSound.pause();
@@ -98,7 +137,7 @@ function playHomeMusic() {
     return;
   }
 
-  homeMusic.volume = 0.4;
+  homeMusic.volume = settings.musicVolume;
 
   homeMusic.play().catch(() => {
     const retry = () => {
@@ -253,9 +292,11 @@ function playTone({
   delay = 0,
   slideTo = null,
 }) {
-  if (!settings.sfx) {
+  if (!settings.sfx || settings.sfxVolume <= 0) {
     return;
   }
+
+  volume *= settings.sfxVolume;
 
   const ctx = getAudioCtx();
 
@@ -1187,7 +1228,16 @@ function startRound() {
 
   const mode = getMode();
 
-  target.style.width = `${Math.round(currentDifficulty.catSize * mode.sizeScale)}px`;
+  // Cap the cat to the play area so it always fits, even on short screens
+  const maxCatWidth = Math.floor(((gameArea.clientHeight - 32) * 222) / 288);
+
+  target.style.width = `${Math.max(
+    44,
+    Math.min(
+      Math.round(currentDifficulty.catSize * mode.sizeScale),
+      maxCatWidth,
+    ),
+  )}px`;
 
   const delay =
     (currentDifficulty.minDelay +
@@ -1909,6 +1959,18 @@ function renderModeSelect() {
   if (modeHint) {
     modeHint.textContent = current.hint;
   }
+
+  // CSS hooks: accent colour on the picker, mascot mood per mode
+  const modeSelectEl = document.querySelector(".mode-select");
+  const mascotWrapEl = document.querySelector(".mascot-wrap");
+
+  if (modeSelectEl) {
+    modeSelectEl.dataset.mode = current.id;
+  }
+
+  if (mascotWrapEl) {
+    mascotWrapEl.dataset.mode = current.id;
+  }
 }
 
 if (modeButtons.length > 0) {
@@ -1921,6 +1983,7 @@ if (modeButtons.length > 0) {
       renderHomeStats();
 
       replayAnimation(button, "is-picked");
+      replayAnimation(document.querySelector(".mascot-wrap"), "is-hop");
       replayAnimation(modeHint, "is-changing");
       replayAnimation(homeStats, "is-changing");
     });
@@ -2110,11 +2173,14 @@ function renderHomeStats() {
   const highScore = homeStats.querySelector(".home-stat-score");
 
   if (caption) {
-    caption.textContent = `${mode.label} RECORDS`;
+    caption.textContent =
+      record.games > 0
+        ? `${mode.label} RECORDS`
+        : `${mode.label} - NO GAMES YET`;
   }
 
   if (games) {
-    games.textContent = String(getTotalGames());
+    games.textContent = String(record.games);
   }
 
   if (fastest) {
@@ -2293,6 +2359,13 @@ function renderSettings() {
     toggle.classList.toggle("is-on", isOn);
     toggle.setAttribute("aria-checked", String(isOn));
   });
+
+  document.querySelectorAll(".volume-slider[data-volume]").forEach((slider) => {
+    const percent = Math.round(settings[slider.dataset.volume] * 100);
+
+    slider.value = String(percent);
+    slider.style.setProperty("--fill", `${percent}%`);
+  });
 }
 
 function openSettings() {
@@ -2369,3 +2442,168 @@ if (settingsScreen) {
 }
 
 applySettings();
+
+/* ===== Feature 5: settings & accessibility ===== */
+
+// Volume sliders (music and sound effects are independent)
+document.querySelectorAll(".volume-slider[data-volume]").forEach((slider) => {
+  slider.addEventListener("input", () => {
+    const key = slider.dataset.volume;
+    const percent = Number(slider.value);
+
+    slider.style.setProperty("--fill", `${percent}%`);
+    saveSetting(key, percent / 100);
+
+    if (
+      key === "musicVolume" &&
+      settings.music &&
+      homeMusic &&
+      homeMusic.paused
+    ) {
+      playHomeMusic();
+    }
+  });
+
+  // a short blip lets the player hear the new sound-effect level
+  slider.addEventListener("change", () => {
+    if (slider.dataset.volume === "sfxVolume") {
+      sfx.click();
+    }
+  });
+});
+
+renderSettings();
+
+// Keyboard: Space starts a round when idle and catches the cat when it shows
+(() => {
+  if (!document.body.classList.contains("game-page")) {
+    return;
+  }
+
+  let spaceHandled = false;
+
+  const dialogOpen = () =>
+    document.querySelector(
+      "#pause-screen.is-open, #settings-screen.is-open",
+    ) !== null || resultsScreen.style.display === "flex";
+
+  document.addEventListener("keydown", (event) => {
+    if (event.code !== "Space" || event.repeat || dialogOpen() || isPaused) {
+      return;
+    }
+
+    if (event.target.closest && event.target.closest(".home-btn, .pause-btn")) {
+      return;
+    }
+
+    event.preventDefault();
+    spaceHandled = true;
+
+    if (targetReady) {
+      target.click();
+    } else if (!isPlaying) {
+      startButton.click();
+    }
+  });
+
+  // stop a focused button from also firing its own click on key release
+  document.addEventListener("keyup", (event) => {
+    if (event.code === "Space" && spaceHandled) {
+      event.preventDefault();
+      spaceHandled = false;
+    }
+  });
+})();
+
+// Dialogs: block the page behind, trap Tab, and give focus back on close
+(() => {
+  const dialogs = [
+    document.querySelector("#pause-screen"),
+    document.querySelector("#settings-screen"),
+    document.querySelector("#achievements-screen"),
+    document.querySelector("#records-screen"),
+    document.querySelector("#results-screen"),
+  ].filter(Boolean);
+
+  const page = document.querySelector(".game-container");
+
+  const isOpen = (dialog) =>
+    dialog.classList.contains("is-open") || dialog.style.display === "flex";
+
+  const FOCUSABLE =
+    'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])';
+
+  let lastFocus = null;
+  let hadOpen = false;
+
+  // remember what had focus while no dialog was open
+  document.addEventListener("focusin", (event) => {
+    if (!dialogs.some(isOpen)) {
+      lastFocus = event.target;
+    }
+  });
+
+  function syncDialogs() {
+    const open = dialogs.filter(isOpen);
+    const top = open[open.length - 1];
+
+    if (page) {
+      page.inert = open.length > 0;
+    }
+
+    // a dialog under another dialog (settings over pause) is inert too
+    dialogs.forEach((dialog) => {
+      dialog.inert = open.length > 1 && dialog !== top;
+    });
+
+    if (hadOpen && open.length === 0 && lastFocus && lastFocus.isConnected) {
+      lastFocus.focus({ preventScroll: true });
+    }
+
+    hadOpen = open.length > 0;
+  }
+
+  const observer = new MutationObserver(syncDialogs);
+
+  dialogs.forEach((dialog) => {
+    observer.observe(dialog, {
+      attributes: true,
+      attributeFilter: ["class", "style"],
+    });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Tab") {
+      return;
+    }
+
+    const open = dialogs.filter(isOpen);
+    const top = open[open.length - 1];
+
+    if (!top) {
+      return;
+    }
+
+    const items = [...top.querySelectorAll(FOCUSABLE)].filter(
+      (el) => el.offsetParent !== null,
+    );
+
+    if (items.length === 0) {
+      return;
+    }
+
+    const first = items[0];
+    const last = items[items.length - 1];
+
+    if (!top.contains(document.activeElement)) {
+      event.preventDefault();
+      first.focus();
+    } else if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+})();

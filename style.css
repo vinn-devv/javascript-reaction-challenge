@@ -5391,10 +5391,6 @@ body.no-effects .miss-feedback {
 
 /* How-to chips are noise next to the mode picker; the tagline and
    the in-game prompts already teach the loop. */
-.how-to {
-  display: none;
-}
-
 .mode-select {
   margin-top: 0;
 }
@@ -5448,4 +5444,273 @@ body.no-effects .miss-feedback {
   background: rgba(168, 85, 247, 0.08);
   border-color: var(--border-hair-strong);
   color: var(--text-primary);
+}
+
+/* ===== Feature 4: home screen upgrade ===== */
+
+/* How-to: one quiet line instead of boxed chips */
+.how-to {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px 14px;
+
+  margin: -10px 0 24px;
+}
+
+.how-to li {
+  padding: 0;
+
+  font-size: 11px;
+  color: var(--text-faint);
+
+  border: 0;
+  border-radius: 0;
+}
+
+.how-to li + li::before {
+  content: "\203A";
+  margin-right: 14px;
+  color: var(--border-hair-strong);
+}
+
+/* Per-mode accent on the picker */
+.mode-select {
+  --mode-accent: 192, 132, 252;
+}
+
+.mode-select[data-mode="easy"] {
+  --mode-accent: 165, 180, 252;
+}
+
+.mode-select[data-mode="hard"] {
+  --mode-accent: 232, 121, 249;
+}
+
+.mode-btn.is-active {
+  background: rgba(var(--mode-accent), 0.16);
+  border-color: rgba(var(--mode-accent), 0.6);
+  box-shadow: 0 0 16px rgba(var(--mode-accent), 0.22);
+}
+
+/* Mascot mood: calmer on Easy, twitchier on Hard */
+.mascot-wrap[data-mode="easy"] .mascot-tail {
+  animation-duration: 2.4s;
+}
+
+.mascot-wrap[data-mode="hard"] .mascot-tail {
+  animation-duration: 0.7s;
+}
+
+.mascot-wrap[data-mode="hard"] .mascot {
+  animation-duration: 1.6s;
+}
+
+.mascot-wrap.is-hop {
+  animation: mascotHop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes mascotHop {
+  0% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-wrap.is-hop {
+    animation: none;
+  }
+}
+
+body.no-effects .mascot-wrap.is-hop {
+  animation: none;
+}
+
+/* ===== Gameplay fits the screen: no scrolling on index ===== */
+
+body.game-page {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.game-page .game-container {
+  display: flex;
+  flex-direction: column;
+
+  width: min(880px, 95vw);
+  height: min(860px, calc(100vh - 16px));
+  height: min(860px, calc(100dvh - 16px));
+  max-height: none;
+  overflow: hidden;
+
+  padding: clamp(10px, 2.2vh, 38px) clamp(12px, 3vw, 38px)
+    clamp(10px, 2vh, 42px);
+}
+
+.game-page .game-header,
+.game-page .stat-row,
+.game-page .round-dots,
+.game-page .mode-tag,
+.game-page .start-btn {
+  flex: none;
+}
+
+.game-page .game-header {
+  margin-bottom: clamp(8px, 1.8vh, 26px);
+  padding-bottom: clamp(6px, 1.4vh, 18px);
+}
+
+.game-page .stat-row {
+  margin-bottom: clamp(8px, 1.6vh, 20px);
+}
+
+.game-page .stat-block {
+  padding: clamp(7px, 1.4vh, 15px) clamp(10px, 1.6vw, 17px);
+}
+
+/* the play area takes whatever space is left */
+.game-page .game-area {
+  flex: 1 1 0;
+  height: auto;
+  min-height: 0;
+}
+
+.game-page .round-dots {
+  margin-top: clamp(8px, 1.6vh, 18px);
+}
+
+.game-page .mode-tag {
+  margin-top: clamp(6px, 1.2vh, 12px);
+}
+
+.game-page .start-btn {
+  margin-top: clamp(8px, 1.8vh, 22px);
+  padding: clamp(10px, 1.8vh, 17px) 16px;
+}
+
+/* short screens (landscape phones, small laptops) */
+@media (max-height: 520px) {
+  .game-page .mode-tag {
+    display: none;
+  }
+
+  .game-page .stat-block {
+    padding: 5px 10px;
+  }
+
+  .game-page .stat-label {
+    font-size: 9px;
+  }
+
+  .game-page .round-dots {
+    margin-top: 6px;
+  }
+
+  .game-page .start-btn {
+    margin-top: 6px;
+    padding: 9px 14px;
+  }
+}
+
+/* ===== Settings: volume sliders + shortcuts hint ===== */
+
+.setting-row > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.volume-slider {
+  --fill: 100%;
+
+  display: block;
+  width: 100%;
+  height: 18px;
+  margin: 8px 0 0;
+
+  background: transparent;
+  cursor: pointer;
+
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.volume-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--signal) var(--fill),
+    rgba(255, 255, 255, 0.08) var(--fill)
+  );
+}
+
+.volume-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.volume-slider::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--signal);
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--pink);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--pink);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
+
+.volume-slider:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.settings-hint {
+  margin: 0 0 16px;
+
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--text-faint);
+}
+
+.settings-card {
+  max-height: 90vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.settings-card::-webkit-scrollbar {
+  display: none;
+}
+
+/* inert (blocked) layers never react to the pointer */
+[inert] {
+  pointer-events: none;
 }
