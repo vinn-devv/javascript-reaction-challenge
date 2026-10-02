@@ -5320,3 +5320,132 @@ body.no-effects .miss-feedback {
     display: none;
   }
 }
+
+/* ===== Paw decorations: fixed positioning + proper paw shape ===== */
+
+.home-screen > .paw {
+  position: absolute;
+  z-index: 0;
+  width: 30px;
+  height: 28px;
+  opacity: 0.2;
+}
+
+.paw::before {
+  width: 16px;
+  height: 12px;
+  top: 14px;
+  left: 7px;
+  border-radius: 50% 50% 46% 46% / 62% 62% 38% 38%;
+}
+
+.paw::after {
+  width: 6px;
+  height: 8px;
+  top: 8px;
+  left: 1px;
+  border-radius: 50%;
+  box-shadow:
+    5px -6px 0 0 currentColor,
+    16px -6px 0 0 currentColor,
+    22px 0 0 0 currentColor;
+}
+
+.home-screen > .paw-left {
+  top: 30px;
+  left: calc(50% - 150px);
+  transform: rotate(-22deg);
+  color: var(--pink);
+}
+
+.home-screen > .paw-right {
+  top: 52px;
+  left: calc(50% + 118px);
+  transform: rotate(20deg);
+  color: var(--signal);
+}
+
+@media (max-width: 480px) {
+  .home-screen > .paw-left {
+    left: calc(50% - 110px);
+  }
+
+  .home-screen > .paw-right {
+    left: calc(50% + 80px);
+  }
+}
+
+/* ===== Home screen: lighter, cleaner layout ===== */
+
+.home-screen {
+  padding-top: 8px;
+}
+
+.home-screen h1 {
+  margin-bottom: 12px;
+}
+
+.home-screen .tagline {
+  margin-bottom: 26px;
+}
+
+/* How-to chips are noise next to the mode picker; the tagline and
+   the in-game prompts already teach the loop. */
+.how-to {
+  display: none;
+}
+
+.mode-select {
+  margin-top: 0;
+}
+
+.mode-hint {
+  margin: 12px 0 18px;
+}
+
+/* Records become one quiet line instead of three boxed cards */
+.home-stats {
+  margin-top: 26px;
+}
+
+.home-stats-mode {
+  margin-bottom: 10px;
+  opacity: 0.8;
+}
+
+.home-stat-row {
+  gap: 0;
+}
+
+.home-stat {
+  min-width: 0;
+  padding: 2px 18px;
+
+  background: none;
+  border: 0;
+  border-radius: 0;
+}
+
+.home-stat + .home-stat {
+  border-left: 1px solid var(--border-hair-strong);
+}
+
+/* Secondary links: text-style, not heavy buttons */
+.home-links {
+  margin-top: 22px;
+  gap: 8px;
+}
+
+.home-links .achievements-btn,
+.home-links .records-btn {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+}
+
+.home-links .achievements-btn:hover,
+.home-links .records-btn:hover {
+  background: rgba(168, 85, 247, 0.08);
+  border-color: var(--border-hair-strong);
+  color: var(--text-primary);
+}

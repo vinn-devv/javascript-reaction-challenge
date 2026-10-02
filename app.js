@@ -1115,8 +1115,22 @@ function showResults() {
 
   resultsScreen.style.display = "flex";
 
+  // Always open at the top: reset scroll before and after layout, and
+  // focus without letting the browser scroll down to the bottom buttons.
+  const resultsCardEl = resultsScreen.querySelector(".results-card");
+  const scrollResultsToTop = () => {
+    resultsScreen.scrollTop = 0;
+
+    if (resultsCardEl) {
+      resultsCardEl.scrollTop = 0;
+    }
+  };
+
+  scrollResultsToTop();
+  requestAnimationFrame(scrollResultsToTop);
+
   if (playAgainButton) {
-    playAgainButton.focus();
+    playAgainButton.focus({ preventScroll: true });
   }
 
   if (resultStreak) {
@@ -1376,12 +1390,34 @@ if (playAgainButton) {
   });
 }
 
-if (resultsHomeButton) {
-  resultsHomeButton.addEventListener("click", () => {
-    resultSound.pause();
+function returnToIdle() {
+  clearScheduled();
+  stopMeow();
+  closePauseScreen();
 
-    window.location.href = "homescreen.html?loading=true";
-  });
+  resultSound.pause();
+  resultSound.currentTime = 0;
+
+  isPaused = false;
+  isPlaying = false;
+  targetReady = false;
+
+  target.classList.remove("is-visible");
+  hideCountdown();
+  setGameState("idle");
+  resetRun();
+  updateRoundDots(0);
+  updatePauseButton();
+
+  resultsScreen.style.display = "none";
+
+  roundCounter.textContent = "Round 00";
+  reactionTime.textContent = "\u2014";
+  gameStatus.textContent = "Ready?";
+}
+
+if (resultsHomeButton) {
+  resultsHomeButton.addEventListener("click", returnToIdle);
 }
 
 function openPauseScreen() {
