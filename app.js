@@ -37,11 +37,15 @@ const resultStreak = document.querySelector("#result-streak");
 const roundBreakdown = document.querySelector(".round-breakdown");
 const accuracyScore = document.querySelector("#accuracy-score");
 const resultRank = document.querySelector("#result-rank");
+const resultCompare = document.querySelector("#result-compare");
+const resultsCard = document.querySelector(".results-card");
 const resultsLabel = document.querySelector("#results-screen .results-label");
 const resultBestStat = resultBestScore
   ? resultBestScore.closest(".result-stat")
   : null;
 const bestStatBlock = bestScore ? bestScore.closest(".stat-block") : null;
+const fastestStat = fastestScore ? fastestScore.closest(".result-stat") : null;
+const averageStat = averageScore ? averageScore.closest(".result-stat") : null;
 
 const difficultyEl = document.querySelector(".difficulty");
 const difficultyName = document.querySelector(".difficulty-name");
@@ -405,6 +409,7 @@ let targetReady = false;
 let round = 0;
 const TOTAL_ROUNDS = 5;
 let reactionTimes = [];
+let roundScores = [];
 let score = 0;
 let combo = 0;
 let maxCombo = 0;
@@ -665,6 +670,7 @@ function updateCombo(reaction) {
 function resetRun() {
   round = 0;
   reactionTimes = [];
+  roundScores = [];
   score = 0;
   combo = 0;
   maxCombo = 0;
@@ -949,6 +955,7 @@ function renderBreakdown() {
   roundBreakdown.textContent = "";
 
   const fastest = Math.min(...reactionTimes);
+  const slowest = Math.max(...reactionTimes);
   const scale = Math.max(...reactionTimes, 500);
 
   reactionTimes.forEach((reaction, i) => {
@@ -958,6 +965,14 @@ function renderBreakdown() {
 
     if (reaction === fastest) {
       row.classList.add("is-fastest");
+    }
+
+    if (
+      reactionTimes.length > 1 &&
+      reaction === slowest &&
+      slowest !== fastest
+    ) {
+      row.classList.add("is-slowest");
     }
 
     row.style.setProperty("--i", i);
@@ -979,9 +994,40 @@ function renderBreakdown() {
     time.className = "breakdown-time";
     time.textContent = `${reaction}ms`;
 
-    row.append(label, track, time);
+    const points = document.createElement("span");
+    points.className = "breakdown-points";
+    points.textContent = `+${roundScores[i] || 0}`;
+
+    row.append(label, track, time, points);
     roundBreakdown.appendChild(row);
   });
+}
+
+function renderScoreComparison(previous) {
+  if (!resultCompare) {
+    return;
+  }
+
+  const label = getMode().label;
+
+  resultCompare.className = "result-compare";
+
+  if (previous === null) {
+    resultCompare.textContent = `FIRST ${label} GAME - SCORE TO BEAT SET`;
+    return;
+  }
+
+  const diff = score - previous;
+
+  if (diff > 0) {
+    resultCompare.classList.add("is-up");
+    resultCompare.textContent = `+${diff} VS ${label} BEST (${previous})`;
+  } else if (diff === 0) {
+    resultCompare.textContent = `TIED ${label} BEST (${previous})`;
+  } else {
+    resultCompare.classList.add("is-down");
+    resultCompare.textContent = `${diff} VS ${label} BEST (${previous})`;
+  }
 }
 
 function showResults() {
@@ -993,6 +1039,8 @@ function showResults() {
 
   updateRoundDots(TOTAL_ROUNDS + 1);
 
+  const previousHighScore = loadRecords()[getMode().id].highScore;
+
   const newRecords = recordGame({
     fastest,
     bestAverage: average,
@@ -1002,6 +1050,30 @@ function showResults() {
 
   const result = updateResultReaction(average);
 
+  if (resultsCard) {
+    resultsCard.classList.remove(
+      "is-tier-fast",
+      "is-tier-normal",
+      "is-tier-slow",
+    );
+    resultsCard.classList.add(`is-tier-${result.tier}`);
+  }
+
+  renderScoreComparison(previousHighScore);
+
+  const brokenKeys = newRecords.map((item) => item.field.key);
+
+  if (fastestStat) {
+    fastestStat.classList.toggle("is-new-best", brokenKeys.includes("fastest"));
+  }
+
+  if (averageStat) {
+    averageStat.classList.toggle(
+      "is-new-best",
+      brokenKeys.includes("bestAverage"),
+    );
+  }
+
   if (resultRank) {
     resultRank.className = `result-rank is-${result.tier}`;
     resultRank.textContent = result.rank;
@@ -1010,10 +1082,19 @@ function showResults() {
   renderBreakdown();
 
   if (resultsLabel) {
-    resultsLabel.textContent = isNewBest
-      ? "NEW BEST!"
-      : `GAME COMPLETE - ${getMode().label}`;
-    resultsLabel.classList.toggle("is-new-best", isNewBest);
+    let labelText = `GAME COMPLETE - ${getMode().label}`;
+
+    if (isNewBest) {
+      labelText = "NEW BEST!";
+    } else if (newRecords.length > 0) {
+      labelText = "NEW RECORD!";
+    }
+
+    resultsLabel.textContent = labelText;
+    resultsLabel.classList.toggle(
+      "is-new-best",
+      isNewBest || newRecords.length > 0,
+    );
   }
 
   if (resultBestStat) {
@@ -1190,6 +1271,8 @@ if (startButton) {
     const rating = getRating(reaction, getMultiplier(combo));
 
     addScore(rating.points);
+
+    roundScores.push(rating.points);
 
     showHitFeedback(rating, hitX, hitY);
 
