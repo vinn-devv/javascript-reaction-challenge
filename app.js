@@ -1474,14 +1474,14 @@ const ACHIEVEMENTS = [
   {
     id: "quick_paws",
     name: "Quick Paws",
-    desc: "React in under 300ms",
-    check: (s) => s.fastest < 300,
+    desc: "React in under 500ms",
+    check: (s) => s.fastest < 500,
   },
   {
     id: "lightning_paws",
     name: "Lightning Paws",
-    desc: "React in under 200ms",
-    check: (s) => s.fastest < 200,
+    desc: "React in under 450ms",
+    check: (s) => s.fastest < 450,
   },
   {
     id: "purrfect_streak",
