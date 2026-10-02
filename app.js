@@ -98,7 +98,7 @@ function playHomeMusic() {
     return;
   }
 
-  homeMusic.volume = 0.03;
+  homeMusic.volume = 0.4;
 
   homeMusic.play().catch(() => {
     const retry = () => {

@@ -5199,3 +5199,124 @@ body.no-effects .miss-feedback {
     animation: none;
   }
 }
+
+/* ===== Scroll cleanup: compact layouts + themed scrollbars ===== */
+
+.game-container,
+#results-screen,
+.results-card {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.45) transparent;
+}
+
+.game-container::-webkit-scrollbar,
+#results-screen::-webkit-scrollbar,
+.results-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.game-container::-webkit-scrollbar-track,
+#results-screen::-webkit-scrollbar-track,
+.results-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.game-container::-webkit-scrollbar-thumb,
+#results-screen::-webkit-scrollbar-thumb,
+.results-card::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.45);
+  border-radius: 999px;
+}
+
+.achievements-card {
+  max-width: 560px;
+}
+
+.achievements-list {
+  max-height: none;
+  overflow: visible;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.achievement-item {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 6px;
+
+  padding: 10px 12px;
+}
+
+.achievement-item strong {
+  font-size: 11px;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.achievement-item span {
+  display: block;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.achievement-item em {
+  font-size: 8px;
+}
+
+.records-body {
+  max-height: none;
+  overflow: visible;
+}
+
+.records-card {
+  max-width: 480px;
+}
+
+.records-history {
+  gap: 5px;
+}
+
+.records-history li {
+  padding: 7px 10px;
+}
+
+.records-subtitle {
+  margin: 14px 0 6px;
+}
+
+@media (max-width: 560px) {
+  .achievements-list {
+    grid-template-columns: 1fr;
+  }
+
+  .achievement-item {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .achievements-card {
+    max-height: 90vh;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .achievements-card::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (max-height: 700px) {
+  .records-card {
+    max-height: 90vh;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .records-card::-webkit-scrollbar {
+    display: none;
+  }
+}
