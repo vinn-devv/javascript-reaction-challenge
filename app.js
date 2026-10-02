@@ -993,6 +993,13 @@ function showResults() {
 
   updateRoundDots(TOTAL_ROUNDS + 1);
 
+  const newRecords = recordGame({
+    fastest,
+    bestAverage: average,
+    highScore: score,
+    bestCombo: maxCombo,
+  });
+
   const result = updateResultReaction(average);
 
   if (resultRank) {
@@ -1013,13 +1020,13 @@ function showResults() {
     resultBestStat.classList.toggle("is-new-best", isNewBest);
   }
 
-  if (isNewBest) {
+  if (isNewBest || newRecords.length > 0) {
     setTimeout(() => sfx.newBest(), 500);
   }
 
   const unlockedNow = checkAchievements();
 
-  renderResultAchievements(unlockedNow);
+  renderResultAchievements(unlockedNow, newRecords);
 
   if (unlockedNow.length > 0) {
     setTimeout(() => sfx.achievement(), 1300);
@@ -1574,40 +1581,73 @@ function checkAchievements() {
   return earned;
 }
 
-function renderResultAchievements(list) {
+function createResultHeading(text) {
+  const heading = document.createElement("p");
+
+  heading.className = "result-achievements-title";
+  heading.textContent = text;
+
+  return heading;
+}
+
+function createResultChip(name, desc, index) {
+  const chip = document.createElement("div");
+
+  chip.className = "achievement-chip";
+  chip.style.setProperty("--i", index);
+
+  const title = document.createElement("strong");
+  title.textContent = name;
+
+  const detail = document.createElement("span");
+  detail.textContent = desc;
+
+  chip.append(title, detail);
+
+  return chip;
+}
+
+function renderResultAchievements(list, newRecords = []) {
   if (!resultAchievements) {
     return;
   }
 
-  resultAchievements.textContent = "";
-  resultAchievements.classList.toggle("has-items", list.length > 0);
+  const hasItems = list.length > 0 || newRecords.length > 0;
 
-  if (list.length === 0) {
+  resultAchievements.textContent = "";
+  resultAchievements.classList.toggle("has-items", hasItems);
+
+  if (!hasItems) {
     return;
   }
 
-  const heading = document.createElement("p");
+  let index = 0;
 
-  heading.className = "result-achievements-title";
-  heading.textContent = "ACHIEVEMENT UNLOCKED";
+  if (newRecords.length > 0) {
+    resultAchievements.appendChild(
+      createResultHeading(`NEW RECORD - ${getMode().label}`),
+    );
 
-  resultAchievements.appendChild(heading);
+    newRecords.forEach(({ field, previous, value }) => {
+      resultAchievements.appendChild(
+        createResultChip(
+          field.label,
+          `${field.format(value)} (was ${field.format(previous)})`,
+          index++,
+        ),
+      );
+    });
+  }
 
-  list.forEach((achievement, i) => {
-    const chip = document.createElement("div");
+  if (list.length > 0) {
+    resultAchievements.appendChild(createResultHeading("ACHIEVEMENT UNLOCKED"));
 
-    chip.className = "achievement-chip";
-    chip.style.setProperty("--i", i);
-
-    const name = document.createElement("strong");
-    name.textContent = achievement.name;
-
-    const desc = document.createElement("span");
-    desc.textContent = achievement.desc;
-
-    chip.append(name, desc);
-    resultAchievements.appendChild(chip);
-  });
+    list.forEach((achievement) => {
+      resultAchievements.appendChild(
+        createResultChip(achievement.name, achievement.desc, index++),
+      );
+    });
+  }
 }
 
 function renderAchievementsList() {
@@ -1765,6 +1805,308 @@ if (modeButtons.length > 0) {
 
 if (modeTag) {
   modeTag.textContent = `MODE: ${getMode().label}`;
+}
+
+const RECORDS_KEY = "records";
+const HISTORY_KEY = "history";
+const HISTORY_LIMIT = 20;
+const RECENT_GAMES_SHOWN = 5;
+
+const RECORD_FIELDS = [
+  {
+    key: "fastest",
+    label: "Fastest reaction",
+    short: "Fastest",
+    lowerIsBetter: true,
+    format: (value) => `${value}ms`,
+  },
+  {
+    key: "bestAverage",
+    label: "Best average",
+    short: "Best avg",
+    lowerIsBetter: true,
+    format: (value) => `${value}ms`,
+  },
+  {
+    key: "highScore",
+    label: "High score",
+    short: "High score",
+    lowerIsBetter: false,
+    format: (value) => String(value),
+  },
+  {
+    key: "bestCombo",
+    label: "Best combo",
+    short: "Best combo",
+    lowerIsBetter: false,
+    format: (value) => String(value),
+  },
+];
+
+function toNumber(value) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function loadRecords() {
+  let stored = null;
+
+  try {
+    stored = JSON.parse(localStorage.getItem(RECORDS_KEY));
+  } catch (err) {
+    stored = null;
+  }
+
+  const records = {};
+
+  Object.keys(MODES).forEach((id) => {
+    const saved =
+      stored && typeof stored[id] === "object" && stored[id] !== null
+        ? stored[id]
+        : {};
+
+    const record = { games: toNumber(saved.games) || 0 };
+
+    RECORD_FIELDS.forEach((field) => {
+      record[field.key] = toNumber(saved[field.key]);
+    });
+
+    records[id] = record;
+  });
+
+  return records;
+}
+
+function saveRecords(records) {
+  try {
+    localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+  } catch (err) {
+    console.warn("Could not save records:", err);
+  }
+}
+
+function loadHistory() {
+  let stored = null;
+
+  try {
+    stored = JSON.parse(localStorage.getItem(HISTORY_KEY));
+  } catch (err) {
+    stored = null;
+  }
+
+  if (!Array.isArray(stored)) {
+    return [];
+  }
+
+  return stored.filter(
+    (entry) =>
+      entry &&
+      MODES[entry.mode] &&
+      RECORD_FIELDS.every((field) => toNumber(entry[field.key]) !== null),
+  );
+}
+
+function saveHistory(history) {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  } catch (err) {
+    console.warn("Could not save game history:", err);
+  }
+}
+
+function recordGame(result) {
+  const modeId = getMode().id;
+  const records = loadRecords();
+  const record = records[modeId];
+  const broken = [];
+
+  record.games += 1;
+
+  RECORD_FIELDS.forEach((field) => {
+    const value = result[field.key];
+    const previous = record[field.key];
+
+    const isBetter =
+      previous === null ||
+      (field.lowerIsBetter ? value < previous : value > previous);
+
+    if (!isBetter) {
+      return;
+    }
+
+    record[field.key] = value;
+
+    if (previous !== null && previous > 0) {
+      broken.push({ field, previous, value });
+    }
+  });
+
+  saveRecords(records);
+
+  const history = loadHistory();
+
+  history.push({ mode: modeId, ...result, at: Date.now() });
+  saveHistory(history.slice(-HISTORY_LIMIT));
+
+  return broken;
+}
+
+function getTotalGames() {
+  try {
+    return Number(localStorage.getItem("gamesPlayed")) || 0;
+  } catch (err) {
+    return 0;
+  }
+}
+
+const recordsBtn = document.querySelector(".records-btn");
+const recordsScreen = document.querySelector("#records-screen");
+const recordsBody = document.querySelector(".records-body");
+const recordsCloseBtn = document.querySelector("#records-close-btn");
+
+function createRecordsRow(label, cells) {
+  const row = document.createElement("tr");
+
+  const head = document.createElement("th");
+  head.scope = "row";
+  head.textContent = label;
+
+  row.appendChild(head);
+
+  cells.forEach((text) => {
+    const cell = document.createElement("td");
+
+    cell.textContent = text;
+    cell.classList.toggle("is-empty", text === "—");
+
+    row.appendChild(cell);
+  });
+
+  return row;
+}
+
+function renderRecords() {
+  if (!recordsBody) {
+    return;
+  }
+
+  const records = loadRecords();
+  const history = loadHistory();
+  const modes = Object.values(MODES);
+
+  recordsBody.textContent = "";
+
+  const total = document.createElement("p");
+  total.className = "records-total";
+  total.textContent = `TOTAL GAMES ${getTotalGames()}`;
+
+  recordsBody.appendChild(total);
+
+  const table = document.createElement("table");
+  table.className = "records-table";
+
+  const headRow = table.createTHead().insertRow();
+
+  headRow.appendChild(document.createElement("th"));
+
+  modes.forEach((mode) => {
+    const th = document.createElement("th");
+
+    th.scope = "col";
+    th.textContent = mode.label;
+
+    headRow.appendChild(th);
+  });
+
+  const body = table.createTBody();
+
+  body.appendChild(
+    createRecordsRow(
+      "Games",
+      modes.map((mode) => String(records[mode.id].games)),
+    ),
+  );
+
+  RECORD_FIELDS.forEach((field) => {
+    body.appendChild(
+      createRecordsRow(
+        field.short,
+        modes.map((mode) => {
+          const value = records[mode.id][field.key];
+
+          return value === null ? "—" : field.format(value);
+        }),
+      ),
+    );
+  });
+
+  recordsBody.appendChild(table);
+
+  if (history.length === 0) {
+    return;
+  }
+
+  const subtitle = document.createElement("p");
+  subtitle.className = "records-subtitle";
+  subtitle.textContent = "RECENT GAMES";
+
+  recordsBody.appendChild(subtitle);
+
+  const list = document.createElement("ul");
+  list.className = "records-history";
+
+  history
+    .slice(-RECENT_GAMES_SHOWN)
+    .reverse()
+    .forEach((entry) => {
+      const item = document.createElement("li");
+
+      const mode = document.createElement("strong");
+      mode.textContent = MODES[entry.mode].label;
+
+      const detail = document.createElement("span");
+      detail.textContent = `${entry.highScore} pts - ${entry.bestAverage}ms avg - ${entry.fastest}ms best`;
+
+      item.append(mode, detail);
+      list.appendChild(item);
+    });
+
+  recordsBody.appendChild(list);
+}
+
+function openRecords() {
+  renderRecords();
+
+  recordsScreen.classList.add("is-open");
+  recordsScreen.setAttribute("aria-hidden", "false");
+
+  if (recordsCloseBtn) {
+    recordsCloseBtn.focus();
+  }
+}
+
+function closeRecords() {
+  recordsScreen.classList.remove("is-open");
+  recordsScreen.setAttribute("aria-hidden", "true");
+}
+
+if (recordsBtn && recordsScreen) {
+  recordsBtn.addEventListener("click", openRecords);
+
+  if (recordsCloseBtn) {
+    recordsCloseBtn.addEventListener("click", closeRecords);
+  }
+
+  recordsScreen.addEventListener("click", (event) => {
+    if (event.target === recordsScreen) {
+      closeRecords();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeRecords();
+    }
+  });
 }
 
 const settingsScreen = document.querySelector("#settings-screen");

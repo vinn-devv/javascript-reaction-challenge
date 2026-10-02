@@ -111,6 +111,7 @@
           <button class="achievements-btn" type="button">
             Achievements <span class="achievements-count">0/8</span>
           </button>
+          <button class="records-btn" type="button">Records</button>
         </div>
       </section>
     </main>
@@ -130,6 +131,24 @@
         <ul class="achievements-list"></ul>
 
         <button id="achievements-close-btn" type="button">Close</button>
+      </div>
+    </section>
+
+    <section
+      id="records-screen"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="records-title"
+      aria-hidden="true"
+    >
+      <div class="achievements-card records-card">
+        <p class="results-label">STATS</p>
+
+        <h2 id="records-title">Personal Records</h2>
+
+        <div class="records-body"></div>
+
+        <button id="records-close-btn" type="button">Close</button>
       </div>
     </section>
 
