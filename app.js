@@ -498,6 +498,7 @@ function updateRoundDots(currentRound) {
   roundDots.forEach((dot, i) => {
     const dotRound = i + 1;
 
+    dot.classList.remove("is-complete");
     dot.classList.toggle("is-done", dotRound < currentRound);
     dot.classList.toggle("is-current", dotRound === currentRound);
   });
@@ -788,6 +789,10 @@ if (gameArea) {
   gameArea.appendChild(countdownOverlay);
 }
 
+function setGameState(state) {
+  gameArea.dataset.state = state;
+}
+
 function showCountdownStep(text, variant = "") {
   countdownText.className = "countdown-text";
   countdownText.textContent = text;
@@ -810,9 +815,13 @@ function hideCountdown() {
 
 function startCountdown(callback) {
   gameArea.classList.add("is-counting");
+  setGameState("counting");
 
   if (round > 1 && !FULL_COUNTDOWN_EVERY_ROUND) {
-    showCountdownStep(`ROUND ${round}\n${difficulty[round].label}`, "is-round");
+    showCountdownStep(
+      `ROUND ${round}/${TOTAL_ROUNDS}\n${difficulty[round].label}`,
+      "is-round",
+    );
     sfx.roundIntro();
 
     schedule(() => {
@@ -1064,7 +1073,7 @@ function startRound() {
 
   updatePauseButton();
 
-  roundCounter.textContent = `Round ${String(round).padStart(2, "0")}`;
+  roundCounter.textContent = `Round ${String(round).padStart(2, "0")}/${String(TOTAL_ROUNDS).padStart(2, "0")}`;
 
   updateRoundDots(round);
 
@@ -1087,6 +1096,7 @@ function startRound() {
   startCountdown(() => {
     gameStatus.textContent = "Watch for the cat...";
     roundLive = true;
+    setGameState("waiting");
 
     schedule(() => {
       // keep the cat (and its glow) away from the edges so the
@@ -1107,6 +1117,7 @@ function startRound() {
       target.style.top = `${randomY}px`;
 
       gameStatus.textContent = "CATCH IT!";
+      setGameState("go");
       targetReady = true;
       target.classList.add("is-visible");
 
@@ -1155,6 +1166,12 @@ if (startButton) {
 
     target.classList.remove("is-visible");
 
+    setGameState("cleared");
+
+    if (roundDots[round - 1]) {
+      roundDots[round - 1].classList.add("is-complete");
+    }
+
     stopMeow();
 
     reactionTimes.push(reaction);
@@ -1197,7 +1214,7 @@ if (startButton) {
     }
 
     if (round < TOTAL_ROUNDS) {
-      gameStatus.textContent = "Round complete! Get ready...";
+      gameStatus.textContent = `Round ${round} clear! Next: ${difficulty[round + 1].label}`;
 
       schedule(startRound, 800);
     } else {
@@ -1340,6 +1357,7 @@ function restartGame() {
 
   target.classList.remove("is-visible");
   hideCountdown();
+  setGameState("idle");
   resetRun();
 
   reactionTime.textContent = "---";
