@@ -435,7 +435,6 @@ button:focus-visible {
   border-radius: 0;
 }
 
-/* no rectangular focus frame around the cat (the glow below replaces it) */
 .target:focus,
 .target:focus-visible {
   outline: none;
@@ -619,7 +618,6 @@ button:focus-visible {
   align-items: center;
   text-align: center;
 
-  /* translucent so the starfield shows through */
   background:
     radial-gradient(
       circle at 50% 42%,
@@ -637,7 +635,6 @@ button:focus-visible {
   opacity: 1;
 }
 
-/* the cat is the focus: no card, no frame, just an aura */
 .loading-den {
   position: relative;
 
@@ -728,7 +725,6 @@ button:focus-visible {
   }
 }
 
-/* tiny floating stars and paws around the cat */
 .spark {
   position: absolute;
   left: var(--x);
@@ -1241,7 +1237,6 @@ body.no-effects .loading-ellipsis i {
   }
 }
 
-/* Unified pixel-neon finish */
 #stars,
 #stars2,
 #stars3 {
@@ -5482,8 +5477,6 @@ body.no-effects .miss-feedback {
   }
 }
 
-/* ===== Scroll cleanup: compact layouts + themed scrollbars ===== */
-
 .game-container,
 #results-screen,
 .results-card {
@@ -5603,8 +5596,6 @@ body.no-effects .miss-feedback {
   }
 }
 
-/* ===== Paw decorations: fixed positioning + proper paw shape ===== */
-
 .home-screen > .paw {
   position: absolute;
   z-index: 0;
@@ -5657,8 +5648,6 @@ body.no-effects .miss-feedback {
   }
 }
 
-/* ===== Home screen: lighter, cleaner layout ===== */
-
 .home-screen {
   padding-top: 8px;
 }
@@ -5671,8 +5660,6 @@ body.no-effects .miss-feedback {
   margin-bottom: 26px;
 }
 
-/* How-to chips are noise next to the mode picker; the tagline and
-   the in-game prompts already teach the loop. */
 .mode-select {
   margin-top: 0;
 }
@@ -5681,7 +5668,6 @@ body.no-effects .miss-feedback {
   margin: 12px 0 18px;
 }
 
-/* Records become one quiet line instead of three boxed cards */
 .home-stats {
   margin-top: 26px;
 }
@@ -5708,7 +5694,6 @@ body.no-effects .miss-feedback {
   border-left: 1px solid var(--border-hair-strong);
 }
 
-/* Secondary links: text-style, not heavy buttons */
 .home-links {
   margin-top: 22px;
   gap: 8px;
@@ -5728,9 +5713,6 @@ body.no-effects .miss-feedback {
   color: var(--text-primary);
 }
 
-/* ===== Feature 4: home screen upgrade ===== */
-
-/* How-to: one quiet line instead of boxed chips */
 .how-to {
   display: flex;
   flex-wrap: wrap;
@@ -5757,7 +5739,6 @@ body.no-effects .miss-feedback {
   color: var(--border-hair-strong);
 }
 
-/* Per-mode accent on the picker */
 .mode-select {
   --mode-accent: 192, 132, 252;
 }
@@ -5776,7 +5757,6 @@ body.no-effects .miss-feedback {
   box-shadow: 0 0 16px rgba(var(--mode-accent), 0.22);
 }
 
-/* Mascot mood: calmer on Easy, twitchier on Hard */
 .mascot-wrap[data-mode="easy"] .mascot-tail {
   animation-duration: 2.4s;
 }
@@ -5814,8 +5794,6 @@ body.no-effects .miss-feedback {
 body.no-effects .mascot-wrap.is-hop {
   animation: none;
 }
-
-/* ===== Gameplay fits the screen: no scrolling on index ===== */
 
 body.game-page {
   height: 100vh;
@@ -5859,7 +5837,6 @@ body.game-page {
   padding: clamp(7px, 1.4vh, 15px) clamp(10px, 1.6vw, 17px);
 }
 
-/* the play area takes whatever space is left */
 .game-page .game-area {
   flex: 1 1 0;
   height: auto;
@@ -5879,7 +5856,6 @@ body.game-page {
   padding: clamp(10px, 1.8vh, 17px) 16px;
 }
 
-/* short screens (landscape phones, small laptops) */
 @media (max-height: 520px) {
   .game-page .mode-tag {
     display: none;
@@ -5902,8 +5878,6 @@ body.game-page {
     padding: 9px 14px;
   }
 }
-
-/* ===== Settings: volume sliders + shortcuts hint ===== */
 
 .setting-row > div {
   flex: 1;
@@ -5992,15 +5966,9 @@ body.game-page {
   display: none;
 }
 
-/* inert (blocked) layers never react to the pointer */
 [inert] {
   pointer-events: none;
 }
-
-/* =====================================================================
-   GAMEPLAY SCREEN — nebula lobby redesign (index.html only)
-   Everything is scoped to body.game-page so the home screen is untouched.
-   ===================================================================== */
 
 body.game-page {
   --pp-panel: rgba(33, 15, 70, 0.62);
@@ -6036,7 +6004,6 @@ body.game-page {
   );
 }
 
-/* ----- frame: no card, content floats over the scene ----- */
 body.game-page .game-container {
   width: min(960px, 92vw);
   height: 100vh;
@@ -6051,7 +6018,6 @@ body.game-page .game-container {
   -webkit-backdrop-filter: none;
 }
 
-/* ----- header ----- */
 body.game-page .game-header {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -6147,7 +6113,6 @@ body.game-page .round-counter {
   white-space: nowrap;
 }
 
-/* ----- stat cards ----- */
 body.game-page .stat-row {
   gap: clamp(10px, 1.6vw, 16px);
   margin-bottom: clamp(6px, 1.2vh, 12px);
@@ -6198,7 +6163,6 @@ body.game-page .stat-block.is-best .stat-icon {
   color: #b58cff;
 }
 
-/* ----- play area: open space with a glowing orbit around the cat ----- */
 body.game-page .game-area,
 body.game-page .game-area[data-state] {
   flex: 1 1 0;
@@ -6212,13 +6176,11 @@ body.game-page .game-area[data-state] {
   overflow: visible;
 }
 
-/* no glow / flash around the cat: kill the old edge flash too */
 body.game-page .game-area::after,
 body.game-page .game-area[data-state="go"]::after {
   display: none;
 }
 
-/* the cat/target and messages sit above the glow */
 body.game-page .target,
 body.game-page .game-status,
 body.game-page .countdown-text {
@@ -6229,7 +6191,6 @@ body.game-page .game-status {
   color: var(--pp-label);
 }
 
-/* idle "Ready?" sign: sits under the idle cat so players know nothing has started */
 body.game-page .game-area:not([data-state]),
 body.game-page .game-area[data-state="idle"] {
   --idle-cat-w: clamp(110px, 12vw, 170px);
@@ -6251,7 +6212,6 @@ body.game-page .game-area[data-state="idle"] .game-status {
   text-shadow: none;
 }
 
-/* idle scuba cat: mirrors the video canvas while no round is running */
 .idle-cat {
   display: none;
   position: absolute;
@@ -6277,7 +6237,6 @@ body.game-page .game-area[data-state="idle"] .idle-cat {
   display: block;
 }
 
-/* ----- round dots, mode tag ----- */
 body.game-page .round-dots {
   gap: 14px;
   margin-top: clamp(8px, 1.6vh, 16px);
@@ -6320,7 +6279,6 @@ body.game-page .mode-tag::after {
   content: " --";
 }
 
-/* ----- start button ----- */
 body.game-page .start-btn {
   --corner: #b48cff;
 
@@ -6395,7 +6353,6 @@ body.game-page .start-btn:active {
   );
 }
 
-/* ----- smaller screens ----- */
 @media (max-width: 640px) {
   body.game-page .game-container {
     width: 94vw;
@@ -6434,7 +6391,6 @@ body.game-page .start-btn:active {
   }
 }
 
-/* ----- start button: hidden while a game is running ----- */
 body.game-page .start-btn.is-hidden {
   visibility: hidden;
   opacity: 0;

@@ -56,7 +56,6 @@ const resumeButton = document.querySelector("#resume-btn");
 const restartButton = document.querySelector("#restart-btn");
 const quitButton = document.querySelector("#quit-btn");
 
-// Respect the OS "reduce motion" preference until the player chooses otherwise
 const prefersReducedMotion =
   typeof window.matchMedia === "function" &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -131,22 +130,87 @@ function saveSetting(key, value) {
   applySettings();
 }
 
+const MUSIC_UNLOCK_EVENTS = [
+  "pointerdown",
+  "pointerup",
+  "touchend",
+  "click",
+  "keydown",
+];
+
+let musicUnlockArmed = false;
+
+function disarmMusicUnlock() {
+  if (!musicUnlockArmed) {
+    return;
+  }
+
+  musicUnlockArmed = false;
+
+  MUSIC_UNLOCK_EVENTS.forEach((type) =>
+    document.removeEventListener(type, onMusicUnlock, true),
+  );
+}
+
+function armMusicUnlock() {
+  if (musicUnlockArmed) {
+    return;
+  }
+
+  musicUnlockArmed = true;
+
+  MUSIC_UNLOCK_EVENTS.forEach((type) =>
+    document.addEventListener(type, onMusicUnlock, true),
+  );
+}
+
+function onMusicUnlock(event) {
+  if (event.type === "keydown" && event.key === "Escape") {
+    return;
+  }
+
+  if (event.target.closest && event.target.closest(".play-btn")) {
+    return;
+  }
+
+  disarmMusicUnlock();
+  playHomeMusic();
+}
+
 function playHomeMusic() {
   if (!homeMusic || !settings.music) {
     return;
   }
 
+  const root = document.documentElement;
+
+  if (
+    root.classList.contains("is-loading") ||
+    root.classList.contains("is-returning")
+  ) {
+    return;
+  }
+
   homeMusic.volume = settings.musicVolume;
 
-  homeMusic.play().catch(() => {
-    const retry = () => {
-      playHomeMusic();
-    };
+  const attempt = homeMusic.play();
 
-    document.addEventListener("pointerdown", retry, { once: true });
-    document.addEventListener("keydown", retry, { once: true });
-  });
+  if (attempt && typeof attempt.catch === "function") {
+    attempt.then(disarmMusicUnlock).catch((err) => {
+      if (err && err.name === "AbortError") {
+        return;
+      }
+
+      armMusicUnlock();
+    });
+  }
 }
+
+window.addEventListener("pagehide", () => {
+  if (homeMusic) {
+    homeMusic.pause();
+  }
+});
 
 function isIdle() {
   const state = gameArea.dataset.state;
@@ -162,13 +226,12 @@ if (catCanvas && catSource) {
   const cw = catCanvas.width;
   const ch = catCanvas.height;
 
-  // idle copy of the cat (shown in the middle of the play area before a round)
   const idleCanvas = document.querySelector(".idle-cat canvas");
   const idleCtx = idleCanvas ? idleCanvas.getContext("2d") : null;
 
   const BLACK_CUTOFF = 60;
   const FEATHER_CUTOFF = 95;
-  const MIN_ALPHA = 60; // anything fainter than this is dropped (kills the box fringe)
+  const MIN_ALPHA = 60;
 
   let hasNativeAlpha = null;
 
@@ -180,8 +243,6 @@ if (catCanvas && catSource) {
       const frame = ctx.getImageData(0, 0, cw, ch);
       const d = frame.data;
 
-      // If the corner is already transparent, the webm has real alpha
-      // and we must not luminance-key it a second time.
       if (hasNativeAlpha === null) {
         hasNativeAlpha = d[3] < 250 && d[(cw - 1) * 4 + 3] < 250;
       }
@@ -239,9 +300,7 @@ if (catCanvas && catSource) {
   if (!catSource.paused) {
     startCatLoop();
   } else {
-    // belt-and-suspenders: don't rely solely on the autoplay attribute
     catSource.play().catch(() => {
-      // autoplay blocked (rare, since it's muted) — start on first interaction
       const resumeOnInteract = () => {
         catSource.play().catch(() => {});
       };
@@ -254,7 +313,6 @@ if (catCanvas && catSource) {
   }
 }
 
-// same setup as the home music: an <audio> element that lives in the page
 const meowSound =
   document.querySelector("#meow-sound") || new Audio("assets/meow.mp3");
 
@@ -282,9 +340,6 @@ function playMeow() {
   }
 }
 
-// The idle scuba cat dances in the middle, with its sound playing along.
-// Mirrors playHomeMusic(): set the volume, play, and only if the browser
-// blocks it wait for the first interaction.
 function playIdleSound() {
   if (!isIdle() || isPlaying || !settings.sfx || settings.sfxVolume <= 0) {
     return;
@@ -565,7 +620,6 @@ function updatePauseButton() {
     pauseButton.disabled = !isPlaying;
   }
 
-  // the Start button is only needed while waiting; hide it once a game runs
   if (startButton) {
     startButton.classList.toggle("is-hidden", isPlaying);
   }
@@ -596,7 +650,6 @@ function updateRoundDots(currentRound) {
   });
 }
 
-// ready state: round 1 is lit, matching the "Round 1 / N" label
 updateRoundDots(1);
 
 const difficulty = {
@@ -1209,8 +1262,6 @@ function showResults() {
 
   resultsScreen.style.display = "flex";
 
-  // Always open at the top: reset scroll before and after layout, and
-  // focus without letting the browser scroll down to the bottom buttons.
   const resultsCardEl = resultsScreen.querySelector(".results-card");
   const scrollResultsToTop = () => {
     resultsScreen.scrollTop = 0;
@@ -1283,7 +1334,6 @@ function startRound() {
 
   const mode = getMode();
 
-  // Cap the cat to the play area so it always fits, even on short screens
   const maxCatWidth = Math.floor(((gameArea.clientHeight - 32) * 222) / 288);
 
   target.style.width = `${Math.max(
@@ -1306,8 +1356,6 @@ function startRound() {
     setGameState("waiting");
 
     schedule(() => {
-      // keep the cat (and its glow) away from the edges so the
-      // game area's overflow:hidden never cuts the shadow off
       const EDGE_PAD = 16;
 
       const randomX =
@@ -1451,7 +1499,6 @@ function showLoading() {
   document.documentElement.classList.add("is-loading");
   loadingScreen.style.display = "flex";
 
-  // next frame, so the fade-in transition actually runs
   requestAnimationFrame(() => {
     requestAnimationFrame(() => loadingScreen.classList.add("is-visible"));
   });
@@ -1512,7 +1559,6 @@ if (playButton) {
     homeScreen.style.display = "none";
     showLoading();
 
-    // fade out just before leaving so the page change isn't abrupt
     setTimeout(
       () => loadingScreen.classList.remove("is-visible"),
       LOADING_HOLD_MS,
@@ -2057,7 +2103,6 @@ function renderModeSelect() {
     modeHint.textContent = current.hint;
   }
 
-  // CSS hooks: accent colour on the picker, mascot mood per mode
   const modeSelectEl = document.querySelector(".mode-select");
   const mascotWrapEl = document.querySelector(".mascot-wrap");
 
@@ -2484,6 +2529,7 @@ function applyMusicSetting(isOn) {
     homeMusic.muted = false;
     playHomeMusic();
   } else {
+    disarmMusicUnlock();
     homeMusic.pause();
   }
 }
@@ -2512,7 +2558,6 @@ if (settingsScreen) {
       const key = toggle.dataset.setting;
       const value = !settings[key];
 
-      // the switch moves its slider too: off = empty bar, on = full bar
       const volumeKey = { music: "musicVolume", sfx: "sfxVolume" }[key];
 
       if (volumeKey) {
@@ -2532,15 +2577,11 @@ if (settingsScreen) {
 
 applySettings();
 
-/* ===== Feature 5: settings & accessibility ===== */
-
-// Volume sliders (music and sound effects are independent)
 document.querySelectorAll(".volume-slider[data-volume]").forEach((slider) => {
   slider.addEventListener("input", () => {
     const key = slider.dataset.volume;
     const percent = Number(slider.value);
 
-    // each slider drives its own switch: 0 turns it off, any sound turns it on
     const switchKey = key === "musicVolume" ? "music" : "sfx";
     const shouldBeOn = percent > 0;
 
@@ -2558,7 +2599,6 @@ document.querySelectorAll(".volume-slider[data-volume]").forEach((slider) => {
     }
   });
 
-  // a short blip lets the player hear the new sound-effect level
   slider.addEventListener("change", () => {
     if (slider.dataset.volume === "sfxVolume") {
       sfx.click();
@@ -2568,8 +2608,6 @@ document.querySelectorAll(".volume-slider[data-volume]").forEach((slider) => {
 
 renderSettings();
 
-// Keyboard: Esc is the only control (pause / resume on the game page).
-// Space and Enter are blocked so they can't press a focused button.
 (() => {
   const blocked = (event) =>
     event.code === "Space" ||
@@ -2590,7 +2628,6 @@ renderSettings();
   });
 })();
 
-// Dialogs: block the page behind, trap Tab, and give focus back on close
 (() => {
   const dialogs = [
     document.querySelector("#pause-screen"),
@@ -2611,7 +2648,6 @@ renderSettings();
   let lastFocus = null;
   let hadOpen = false;
 
-  // remember what had focus while no dialog was open
   document.addEventListener("focusin", (event) => {
     if (!dialogs.some(isOpen)) {
       lastFocus = event.target;
@@ -2626,7 +2662,6 @@ renderSettings();
       page.inert = open.length > 0;
     }
 
-    // a dialog under another dialog (settings over pause) is inert too
     dialogs.forEach((dialog) => {
       dialog.inert = open.length > 1 && dialog !== top;
     });
@@ -2683,5 +2718,4 @@ renderSettings();
   });
 })();
 
-// first load: the idle scuba cat is already dancing, so start its sound
 playIdleSound();
