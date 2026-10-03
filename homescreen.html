@@ -304,6 +304,28 @@
     </section>
 
     <div id="game-loading" role="status" aria-live="polite">
+      <svg class="loading-defs" aria-hidden="true" focusable="false">
+        <symbol id="loading-paw" viewBox="0 0 24 24">
+          <ellipse cx="12" cy="16.5" rx="5.6" ry="4.6" />
+          <ellipse
+            cx="5.2"
+            cy="11.2"
+            rx="2.2"
+            ry="3"
+            transform="rotate(-22 5.2 11.2)"
+          />
+          <ellipse cx="9.2" cy="6.4" rx="2.2" ry="3.1" />
+          <ellipse cx="14.8" cy="6.4" rx="2.2" ry="3.1" />
+          <ellipse
+            cx="18.8"
+            cy="11.2"
+            rx="2.2"
+            ry="3"
+            transform="rotate(22 18.8 11.2)"
+          />
+        </symbol>
+      </svg>
+
       <div class="loading-den">
         <span class="loading-aura" aria-hidden="true"></span>
         <i
@@ -360,12 +382,23 @@
 
       <div class="loading-logo">Paw Reflex</div>
 
-      <div class="loading-dots" aria-hidden="true">
-        <span style="--i: 0"></span><span style="--i: 1"></span
-        ><span style="--i: 2"></span>
+      <div class="loading-steps" aria-hidden="true">
+        <span class="loading-step"
+          ><svg viewBox="0 0 24 24"><use href="#loading-paw" /></svg
+        ></span>
+        <span class="loading-step"
+          ><svg viewBox="0 0 24 24"><use href="#loading-paw" /></svg
+        ></span>
+        <span class="loading-step"
+          ><svg viewBox="0 0 24 24"><use href="#loading-paw" /></svg
+        ></span>
       </div>
 
-      <p class="loading-text">Loading... please wait</p>
+      <p class="loading-text">
+        Warming up paws<span class="loading-ellipsis" aria-hidden="true"
+          ><i>.</i><i>.</i><i>.</i></span
+        >
+      </p>
     </div>
 
     <audio id="home-music" loop preload="auto">

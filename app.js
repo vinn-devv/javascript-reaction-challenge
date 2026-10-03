@@ -1390,6 +1390,7 @@ if (homeButton) {
 }
 
 const LOADING_FADE_MS = 250;
+const LOADING_HOLD_MS = 2700;
 
 function showLoading() {
   document.documentElement.classList.add("is-loading");
@@ -1429,7 +1430,7 @@ if (playButton) {
       hideLoading(() => {
         playHomeMusic();
       });
-    }, 1000);
+    }, LOADING_HOLD_MS);
   } else {
     playHomeMusic();
   }
@@ -1457,11 +1458,14 @@ if (playButton) {
     showLoading();
 
     // fade out just before leaving so the page change isn't abrupt
-    setTimeout(() => loadingScreen.classList.remove("is-visible"), 950);
+    setTimeout(
+      () => loadingScreen.classList.remove("is-visible"),
+      LOADING_HOLD_MS,
+    );
 
     setTimeout(() => {
       window.location.href = "index.html";
-    }, 1200);
+    }, LOADING_HOLD_MS + LOADING_FADE_MS);
   });
 }
 

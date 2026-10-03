@@ -626,7 +626,7 @@ button:focus-visible {
       rgba(168, 85, 247, 0.13),
       transparent 40%
     ),
-    rgba(8, 5, 15, 0.93);
+    rgba(8, 5, 15, 0.8);
   z-index: 10;
 
   opacity: 0;
@@ -641,9 +641,9 @@ button:focus-visible {
 .loading-den {
   position: relative;
 
-  width: min(240px, 80vw);
-  height: 200px;
-  margin: 0 auto 6px;
+  width: min(340px, 90vw);
+  height: 230px;
+  margin: 0 auto 4px;
 
   display: flex;
   align-items: center;
@@ -652,28 +652,28 @@ button:focus-visible {
 
 .loading-aura {
   position: absolute;
-  width: 190px;
-  height: 190px;
+  width: 340px;
+  height: 260px;
   left: 50%;
   top: 50%;
 
   border-radius: 50%;
   background: radial-gradient(
-    circle,
-    rgba(168, 85, 247, 0.5),
-    rgba(168, 85, 247, 0.14) 48%,
-    transparent 72%
+    closest-side,
+    rgba(168, 85, 247, 0.4),
+    rgba(168, 85, 247, 0.13) 45%,
+    transparent 100%
   );
-  filter: blur(14px);
+  filter: blur(26px);
 
   transform: translate(-50%, -50%);
-  animation: auraPulse 2.6s ease-in-out infinite;
+  animation: auraPulse 3.2s ease-in-out infinite;
 }
 
 @keyframes auraPulse {
   0%,
   100% {
-    opacity: 0.65;
+    opacity: 0.6;
     transform: translate(-50%, -50%) scale(0.94);
   }
   50% {
@@ -686,21 +686,45 @@ button:focus-visible {
   position: relative;
   z-index: 1;
 
-  width: 132px;
-  height: 132px;
+  width: 140px;
+  height: 140px;
   object-fit: contain;
 
   filter: drop-shadow(0 0 16px rgba(168, 85, 247, 0.45));
-  animation: loadingCatBob 2.2s ease-in-out infinite;
+  animation:
+    catEnter 0.6s cubic-bezier(0.22, 1, 0.36, 1) both,
+    catFloat 3.2s ease-in-out 0.6s infinite alternate,
+    catTilt 4.6s ease-in-out 0.6s infinite alternate;
 }
 
-@keyframes loadingCatBob {
-  0%,
-  100% {
-    transform: translateY(0);
+@keyframes catEnter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.86);
   }
-  50% {
-    transform: translateY(-5px);
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes catFloat {
+  from {
+    translate: 0 0;
+    scale: 1;
+  }
+  to {
+    translate: 0 -9px;
+    scale: 1.04;
+  }
+}
+
+@keyframes catTilt {
+  from {
+    rotate: -1.2deg;
+  }
+  to {
+    rotate: 1.2deg;
   }
 }
 
@@ -727,6 +751,7 @@ button:focus-visible {
   width: 30px;
   height: 28px;
   color: var(--signal-strong);
+  filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.55));
 }
 
 .spark .paw {
@@ -748,68 +773,222 @@ button:focus-visible {
 .loading-logo {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 14px;
+  font-size: 16px;
   letter-spacing: 0.08em;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
+
+  animation:
+    logoIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both,
+    logoGlow 1.3s ease-in-out 0.3s infinite alternate;
 }
 
-.loading-dots {
+@keyframes logoIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    letter-spacing: 0.26em;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    letter-spacing: 0.08em;
+  }
+}
+
+@keyframes logoGlow {
+  from {
+    color: #f3e8ff;
+    text-shadow:
+      0 0 10px rgba(168, 85, 247, 0.3),
+      0 0 24px rgba(168, 85, 247, 0.12);
+  }
+  to {
+    color: #c084fc;
+    text-shadow:
+      0 0 12px rgba(192, 132, 252, 0.9),
+      0 0 28px rgba(168, 85, 247, 0.6),
+      0 0 52px rgba(168, 85, 247, 0.32);
+  }
+}
+
+.loading-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.loading-steps {
   display: flex;
   justify-content: center;
-  gap: 10px;
+  align-items: center;
+  gap: 22px;
+  height: 38px;
   margin: 0 auto;
+
+  animation: loadingFadeUp 0.45s ease-out 0.35s both;
 }
 
-.loading-dots span {
+.loading-step {
   display: block;
-  width: 10px;
-  height: 10px;
+  width: 24px;
+  height: 24px;
 
-  border-radius: 50%;
-  background: var(--signal-strong);
-  box-shadow: 0 0 10px rgba(192, 132, 252, 0.6);
-
-  animation: dotPulse 1.2s ease-in-out infinite;
-  animation-delay: calc(var(--i) * 0.16s);
+  color: var(--signal-strong);
 }
 
-@keyframes dotPulse {
+.loading-step svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  fill: currentColor;
+  opacity: 0.7;
+
+  animation-duration: 2.7s;
+  animation-timing-function: ease;
+  animation-iteration-count: infinite;
+  animation-delay: 0.35s;
+  animation-fill-mode: backwards;
+}
+
+.loading-step:nth-child(1) svg {
+  animation-name: pawOne;
+}
+
+.loading-step:nth-child(2) svg {
+  animation-name: pawTwo;
+}
+
+.loading-step:nth-child(3) svg {
+  animation-name: pawThree;
+}
+
+@keyframes pawOne {
   0%,
-  80%,
+  17%,
   100% {
-    opacity: 0.25;
-    transform: scale(0.7);
-  }
-  40% {
     opacity: 1;
-    transform: scale(1.15);
+    scale: 1;
+    filter: drop-shadow(0 0 5px rgba(216, 180, 254, 0.85))
+      drop-shadow(0 0 12px rgba(168, 85, 247, 0.45));
+  }
+  5% {
+    opacity: 1;
+    scale: 1.28;
+    filter: drop-shadow(0 0 8px rgba(233, 213, 255, 1))
+      drop-shadow(0 0 18px rgba(168, 85, 247, 0.7));
   }
 }
 
-@keyframes dotFade {
+@keyframes pawTwo {
   0%,
-  80%,
-  100% {
-    opacity: 0.25;
+  33% {
+    opacity: 0.2;
+    scale: 0.88;
+    filter: drop-shadow(0 0 0 rgba(216, 180, 254, 0))
+      drop-shadow(0 0 0 rgba(168, 85, 247, 0));
   }
-  40% {
+  38% {
     opacity: 1;
+    scale: 1.28;
+    filter: drop-shadow(0 0 8px rgba(233, 213, 255, 1))
+      drop-shadow(0 0 18px rgba(168, 85, 247, 0.7));
+  }
+  50%,
+  94% {
+    opacity: 1;
+    scale: 1;
+    filter: drop-shadow(0 0 5px rgba(216, 180, 254, 0.85))
+      drop-shadow(0 0 12px rgba(168, 85, 247, 0.45));
+  }
+  100% {
+    opacity: 0.2;
+    scale: 0.88;
+    filter: drop-shadow(0 0 0 rgba(216, 180, 254, 0))
+      drop-shadow(0 0 0 rgba(168, 85, 247, 0));
+  }
+}
+
+@keyframes pawThree {
+  0%,
+  66% {
+    opacity: 0.2;
+    scale: 0.88;
+    filter: drop-shadow(0 0 0 rgba(216, 180, 254, 0))
+      drop-shadow(0 0 0 rgba(168, 85, 247, 0));
+  }
+  71% {
+    opacity: 1;
+    scale: 1.28;
+    filter: drop-shadow(0 0 8px rgba(233, 213, 255, 1))
+      drop-shadow(0 0 18px rgba(168, 85, 247, 0.7));
+  }
+  83%,
+  94% {
+    opacity: 1;
+    scale: 1;
+    filter: drop-shadow(0 0 5px rgba(216, 180, 254, 0.85))
+      drop-shadow(0 0 12px rgba(168, 85, 247, 0.45));
+  }
+  100% {
+    opacity: 0.2;
+    scale: 0.88;
+    filter: drop-shadow(0 0 0 rgba(216, 180, 254, 0))
+      drop-shadow(0 0 0 rgba(168, 85, 247, 0));
   }
 }
 
 .loading-text {
-  margin-top: 16px;
+  margin-top: 14px;
   min-height: 1.4em;
 
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.08em;
   color: var(--text-muted);
+
+  animation: loadingFadeUp 0.45s ease-out 0.5s both;
 }
 
-/* calm mode: keep the dots (they signal activity), drop the decoration motion */
+.loading-ellipsis i {
+  font-style: normal;
+
+  animation: ellipsisDot 1.2s ease-in-out infinite backwards;
+}
+
+.loading-ellipsis i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-ellipsis i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes ellipsisDot {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  25%,
+  70% {
+    opacity: 1;
+  }
+}
+
+@keyframes loadingFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 body.no-effects .loading-aura,
 body.no-effects .loading-gif,
+body.no-effects .loading-logo,
 body.no-effects .spark {
   animation: none;
 }
@@ -818,25 +997,26 @@ body.no-effects .spark {
   opacity: 0.55;
 }
 
-body.no-effects .loading-dots span {
+body.no-effects .loading-step svg {
+  animation-duration: 2.7s !important;
+  animation-iteration-count: infinite !important;
+}
+
+body.no-effects .loading-ellipsis i {
   animation-duration: 1.2s !important;
   animation-iteration-count: infinite !important;
-  animation-delay: calc(var(--i) * 0.16s) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .loading-aura,
   .loading-gif,
+  .loading-logo,
   .spark {
     animation: none;
   }
 
   .spark {
     opacity: 0.55;
-  }
-
-  .loading-dots span {
-    animation-name: dotFade;
   }
 
   #game-loading {
@@ -1093,7 +1273,7 @@ body.no-effects .loading-dots span {
 }
 
 .loading-logo {
-  color: var(--text-primary);
+  color: var(--signal-strong);
   text-shadow:
     0 0 10px rgba(168, 85, 247, 0.3),
     0 0 24px rgba(168, 85, 247, 0.12);
