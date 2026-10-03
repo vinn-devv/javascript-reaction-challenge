@@ -149,6 +149,12 @@ function playHomeMusic() {
   });
 }
 
+function isIdle() {
+  const state = gameArea.dataset.state;
+
+  return !state || state === "idle";
+}
+
 if (catCanvas && catSource) {
   const ctx = catCanvas.getContext("2d", {
     willReadFrequently: true,
@@ -156,6 +162,10 @@ if (catCanvas && catSource) {
 
   const cw = catCanvas.width;
   const ch = catCanvas.height;
+
+  // idle copy of the cat (shown in the middle of the play area before a round)
+  const idleCanvas = document.querySelector(".idle-cat canvas");
+  const idleCtx = idleCanvas ? idleCanvas.getContext("2d") : null;
 
   const BLACK_CUTOFF = 60;
   const FEATHER_CUTOFF = 95;
@@ -196,6 +206,11 @@ if (catCanvas && catSource) {
       }
 
       ctx.putImageData(frame, 0, 0);
+
+      if (idleCtx && isIdle()) {
+        idleCtx.clearRect(0, 0, cw, ch);
+        idleCtx.drawImage(catCanvas, 0, 0);
+      }
     }
   };
 
@@ -250,6 +265,23 @@ function playMeow() {
       .catch((err) => console.warn("Meow sound unavailable:", err));
   } catch (err) {
     console.warn("Meow sound unavailable:", err);
+  }
+}
+
+// The idle scuba cat dances in the middle, with its sound playing along.
+function playIdleSound() {
+  if (!isIdle() || isPlaying) {
+    return;
+  }
+
+  playMeow();
+
+  if (meowSound.paused) {
+    // autoplay blocked: start on the first tap / key press instead
+    const retry = () => playIdleSound();
+
+    document.addEventListener("pointerdown", retry, { once: true });
+    document.addEventListener("keydown", retry, { once: true });
   }
 }
 
@@ -550,6 +582,9 @@ function updateRoundDots(currentRound) {
   });
 }
 
+// ready state: round 1 is lit, matching the "Round 1 / N" label
+updateRoundDots(1);
+
 const difficulty = {
   1: {
     label: "EASY",
@@ -612,6 +647,8 @@ function renderDifficulty(level) {
   });
 
   difficultyName.textContent = config ? config.label : "READY";
+
+  difficultyEl.classList.toggle("is-ready", !config);
 
   difficultyEl.classList.remove("is-up");
 
@@ -1198,6 +1235,8 @@ function showResults() {
 }
 
 function startRound() {
+  stopMeow();
+
   if (round >= TOTAL_ROUNDS) {
     resetRun();
   }
@@ -1216,7 +1255,7 @@ function startRound() {
 
   updatePauseButton();
 
-  roundCounter.textContent = `Round ${String(round).padStart(2, "0")}/${String(TOTAL_ROUNDS).padStart(2, "0")}`;
+  roundCounter.textContent = `Round ${round} / ${TOTAL_ROUNDS}`;
 
   updateRoundDots(round);
 
@@ -1502,14 +1541,16 @@ function returnToIdle() {
   hideCountdown();
   setGameState("idle");
   resetRun();
-  updateRoundDots(0);
+  updateRoundDots(1);
   updatePauseButton();
 
   resultsScreen.style.display = "none";
 
-  roundCounter.textContent = "Round 00";
+  roundCounter.textContent = `Round 1 / ${TOTAL_ROUNDS}`;
   reactionTime.textContent = "\u2014";
   gameStatus.textContent = "Ready?";
+
+  playIdleSound();
 }
 
 if (resultsHomeButton) {
@@ -2665,3 +2706,6 @@ renderSettings();
     }
   });
 })();
+
+// first load: the idle scuba cat is already dancing, so start its sound
+playIdleSound();
