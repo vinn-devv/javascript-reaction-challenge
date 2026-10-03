@@ -564,6 +564,11 @@ function updatePauseButton() {
   if (pauseButton) {
     pauseButton.disabled = !isPlaying;
   }
+
+  // the Start button is only needed while waiting; hide it once a game runs
+  if (startButton) {
+    startButton.classList.toggle("is-hidden", isPlaying);
+  }
 }
 
 const roundDotsEl = document.querySelector(".round-dots");
