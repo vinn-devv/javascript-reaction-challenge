@@ -4,7 +4,7 @@ A pixel-art reaction-time game built with HTML, CSS, and JavaScript. Wait for th
 
 ## Live Demo
 
-**[Play Paw Reflex]([https://github.com/vinn-devv/javascript-reaction-challenge](https://vinn-devv.github.io/javascript-reaction-challenge/))**
+**[Play Paw Reflex](https://vinn-devv.github.io/javascript-reaction-challenge/)**
 
 ## Screenshots
 
