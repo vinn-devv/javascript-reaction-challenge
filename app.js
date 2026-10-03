@@ -254,7 +254,9 @@ if (catCanvas && catSource) {
   }
 }
 
-const meowSound = new Audio("assets/meow.mp3");
+// same setup as the home music: an <audio> element that lives in the page
+const meowSound =
+  document.querySelector("#meow-sound") || new Audio("assets/meow.mp3");
 
 meowSound.preload = "auto";
 meowSound.loop = true;
@@ -281,21 +283,30 @@ function playMeow() {
 }
 
 // The idle scuba cat dances in the middle, with its sound playing along.
+// Mirrors playHomeMusic(): set the volume, play, and only if the browser
+// blocks it wait for the first interaction.
 function playIdleSound() {
-  if (!isIdle() || isPlaying) {
+  if (!isIdle() || isPlaying || !settings.sfx || settings.sfxVolume <= 0) {
     return;
   }
 
-  playMeow();
+  meowSound.volume = settings.sfxVolume;
 
-  if (meowSound.paused) {
-    // autoplay blocked: start on the first tap / key press instead
-    const retry = () => playIdleSound();
+  meowSound.play().catch(() => {
+    const retry = () => {
+      playIdleSound();
+    };
 
     document.addEventListener("pointerdown", retry, { once: true });
     document.addEventListener("keydown", retry, { once: true });
-  }
+  });
 }
+
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) {
+    playIdleSound();
+  }
+});
 
 function stopMeow() {
   try {
@@ -1662,9 +1673,9 @@ if (pauseButton && pauseScreen) {
       return;
     }
 
-    const key = event.key.toLowerCase();
+    if (event.key === "Escape") {
+      event.preventDefault();
 
-    if (key === "escape" || key === "p") {
       if (isPaused) {
         resumeGame();
       } else {
@@ -1971,12 +1982,6 @@ if (achievementsBtn && achievementsScreen) {
 
   achievementsScreen.addEventListener("click", (event) => {
     if (event.target === achievementsScreen) {
-      closeAchievements();
-    }
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
       closeAchievements();
     }
   });
@@ -2425,12 +2430,6 @@ if (recordsBtn && recordsScreen) {
       closeRecords();
     }
   });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      closeRecords();
-    }
-  });
 }
 
 const settingsScreen = document.querySelector("#settings-screen");
@@ -2524,15 +2523,6 @@ if (settingsScreen) {
       renderSettings();
     });
   });
-
-  document.addEventListener("keydown", (event) => {
-    if (
-      event.key === "Escape" &&
-      settingsScreen.classList.contains("is-open")
-    ) {
-      closeSettings();
-    }
-  });
 }
 
 applySettings();
@@ -2573,44 +2563,25 @@ document.querySelectorAll(".volume-slider[data-volume]").forEach((slider) => {
 
 renderSettings();
 
-// Keyboard: Space starts a round when idle and catches the cat when it shows
+// Keyboard: Esc is the only control (pause / resume on the game page).
+// Space and Enter are blocked so they can't press a focused button.
 (() => {
-  if (!document.body.classList.contains("game-page")) {
-    return;
-  }
+  const blocked = (event) =>
+    event.code === "Space" ||
+    event.key === " " ||
+    event.key === "Enter" ||
+    event.key.toLowerCase() === "p";
 
-  let spaceHandled = false;
-
-  const dialogOpen = () =>
-    document.querySelector(
-      "#pause-screen.is-open, #settings-screen.is-open",
-    ) !== null || resultsScreen.style.display === "flex";
-
-  document.addEventListener("keydown", (event) => {
-    if (event.code !== "Space" || event.repeat || dialogOpen() || isPaused) {
-      return;
-    }
-
-    if (event.target.closest && event.target.closest(".home-btn, .pause-btn")) {
-      return;
-    }
-
-    event.preventDefault();
-    spaceHandled = true;
-
-    if (targetReady) {
-      target.click();
-    } else if (!isPlaying) {
-      startButton.click();
-    }
-  });
-
-  // stop a focused button from also firing its own click on key release
-  document.addEventListener("keyup", (event) => {
-    if (event.code === "Space" && spaceHandled) {
-      event.preventDefault();
-      spaceHandled = false;
-    }
+  ["keydown", "keyup"].forEach((type) => {
+    document.addEventListener(
+      type,
+      (event) => {
+        if (blocked(event)) {
+          event.preventDefault();
+        }
+      },
+      true,
+    );
   });
 })();
 

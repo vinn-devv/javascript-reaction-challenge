@@ -220,9 +220,7 @@
           </li>
         </ul>
 
-        <p class="settings-hint">
-          Space: start / catch &middot; P or Esc: pause
-        </p>
+        <p class="settings-hint">Esc: pause / resume</p>
 
         <button id="settings-close-btn" type="button">Close</button>
       </div>
@@ -277,6 +275,10 @@
         <button id="results-home-btn">Nah, I'm good</button>
       </div>
     </section>
+    <audio id="meow-sound" loop preload="auto">
+      <source src="assets/meow.mp3" type="audio/mpeg" />
+    </audio>
+
     <script src="app.js"></script>
   </body>
 </html>
