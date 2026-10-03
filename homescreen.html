@@ -11,6 +11,11 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
+    <script>
+      if (location.search.indexOf("loading=true") !== -1) {
+        document.documentElement.classList.add("is-returning");
+      }
+    </script>
   </head>
 
   <body>
@@ -355,16 +360,12 @@
 
       <div class="loading-logo">Paw Reflex</div>
 
-      <div class="loading-bar" aria-hidden="true">
+      <div class="loading-dots" aria-hidden="true">
         <span style="--i: 0"></span><span style="--i: 1"></span
-        ><span style="--i: 2"></span><span style="--i: 3"></span
-        ><span style="--i: 4"></span><span style="--i: 5"></span
-        ><span style="--i: 6"></span><span style="--i: 7"></span
-        ><span style="--i: 8"></span><span style="--i: 9"></span
-        ><span style="--i: 10"></span><span style="--i: 11"></span>
+        ><span style="--i: 2"></span>
       </div>
 
-      <p class="loading-text">Warming up paws...</p>
+      <p class="loading-text">Loading... please wait</p>
     </div>
 
     <audio id="home-music" loop preload="auto">

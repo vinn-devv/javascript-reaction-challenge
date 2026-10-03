@@ -753,58 +753,47 @@ button:focus-visible {
   margin-bottom: 18px;
 }
 
-/* pixel-art bar: notched frame, blocky segments, honest looping wave
-   (the game does not track real load progress, so no percentage) */
-.loading-bar {
-  --block-off: rgba(168, 85, 247, 0.12);
-  --block-mid: #7c3aed;
-  --block-on: #e9d5ff;
-
+.loading-dots {
   display: flex;
-  gap: 3px;
-
-  padding: 4px;
+  justify-content: center;
+  gap: 10px;
   margin: 0 auto;
-
-  background: rgba(168, 85, 247, 0.28);
-  clip-path: polygon(
-    0 3px,
-    3px 3px,
-    3px 0,
-    calc(100% - 3px) 0,
-    calc(100% - 3px) 3px,
-    100% 3px,
-    100% calc(100% - 3px),
-    calc(100% - 3px) calc(100% - 3px),
-    calc(100% - 3px) 100%,
-    3px 100%,
-    3px calc(100% - 3px),
-    0 calc(100% - 3px)
-  );
 }
 
-.loading-bar span {
+.loading-dots span {
   display: block;
   width: 10px;
-  height: 12px;
+  height: 10px;
 
-  background: var(--block-off);
-  animation: blockWave 1.4s steps(1, end) infinite;
-  animation-delay: calc(var(--i) * -0.1s);
+  border-radius: 50%;
+  background: var(--signal-strong);
+  box-shadow: 0 0 10px rgba(192, 132, 252, 0.6);
+
+  animation: dotPulse 1.2s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.16s);
 }
 
-@keyframes blockWave {
+@keyframes dotPulse {
   0%,
-  18% {
-    background: var(--block-on);
-  }
-  19%,
-  36% {
-    background: var(--block-mid);
-  }
-  37%,
+  80%,
   100% {
-    background: var(--block-off);
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes dotFade {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
   }
 }
 
@@ -816,15 +805,9 @@ button:focus-visible {
   font-size: 11px;
   letter-spacing: 0.08em;
   color: var(--text-muted);
-
-  transition: opacity 0.15s ease;
 }
 
-.loading-text.is-swapping {
-  opacity: 0;
-}
-
-/* calm mode: keep the bar (it signals activity), drop the decoration motion */
+/* calm mode: keep the dots (they signal activity), drop the decoration motion */
 body.no-effects .loading-aura,
 body.no-effects .loading-gif,
 body.no-effects .spark {
@@ -833,6 +816,12 @@ body.no-effects .spark {
 
 body.no-effects .spark {
   opacity: 0.55;
+}
+
+body.no-effects .loading-dots span {
+  animation-duration: 1.2s !important;
+  animation-iteration-count: infinite !important;
+  animation-delay: calc(var(--i) * 0.16s) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -846,10 +835,22 @@ body.no-effects .spark {
     opacity: 0.55;
   }
 
-  #game-loading,
-  .loading-text {
+  .loading-dots span {
+    animation-name: dotFade;
+  }
+
+  #game-loading {
     transition: none;
   }
+}
+
+.is-returning .home-screen {
+  display: none;
+}
+
+.is-returning .game-container,
+.is-loading .game-container {
+  visibility: hidden;
 }
 
 #results-screen {

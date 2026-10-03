@@ -1389,38 +1389,10 @@ if (homeButton) {
   });
 }
 
-const LOADING_MESSAGES = [
-  "Warming up paws...",
-  "Stretching whiskers...",
-  "Preparing the reflex test...",
-];
-
 const LOADING_FADE_MS = 250;
-const LOADING_MESSAGE_MS = 420;
-
-let loadingMessageTimer = null;
 
 function showLoading() {
-  const text = loadingScreen.querySelector(".loading-text");
-  let index = 0;
-
-  clearInterval(loadingMessageTimer);
-
-  if (text) {
-    text.textContent = LOADING_MESSAGES[0];
-
-    loadingMessageTimer = setInterval(() => {
-      index = (index + 1) % LOADING_MESSAGES.length;
-
-      text.classList.add("is-swapping");
-
-      setTimeout(() => {
-        text.textContent = LOADING_MESSAGES[index];
-        text.classList.remove("is-swapping");
-      }, 150);
-    }, LOADING_MESSAGE_MS);
-  }
-
+  document.documentElement.classList.add("is-loading");
   loadingScreen.style.display = "flex";
 
   // next frame, so the fade-in transition actually runs
@@ -1431,9 +1403,9 @@ function showLoading() {
 
 function hideLoading(onDone) {
   loadingScreen.classList.remove("is-visible");
+  document.documentElement.classList.remove("is-loading", "is-returning");
 
   setTimeout(() => {
-    clearInterval(loadingMessageTimer);
     loadingScreen.style.display = "none";
 
     if (onDone) {
@@ -1452,15 +1424,28 @@ if (playButton) {
     showLoading();
 
     setTimeout(() => {
-      hideLoading(() => {
-        homeScreen.style.display = "block";
+      homeScreen.style.display = "block";
 
+      hideLoading(() => {
         playHomeMusic();
       });
     }, 1000);
   } else {
     playHomeMusic();
   }
+
+  window.addEventListener("pageshow", (event) => {
+    if (!event.persisted) {
+      return;
+    }
+
+    loadingScreen.classList.remove("is-visible");
+    loadingScreen.style.display = "none";
+    document.documentElement.classList.remove("is-loading", "is-returning");
+    homeScreen.style.display = "block";
+
+    playHomeMusic();
+  });
 
   playButton.addEventListener("click", () => {
     if (homeMusic) {
