@@ -6,8 +6,6 @@ A pixel-art reaction-time game built with HTML, CSS, and JavaScript. Wait for th
 
 **[Play Paw Reflex](https://github.com/vinn-devv/javascript-reaction-challenge)**
 
-> Replace `YOUR-USERNAME` and `YOUR-REPO` with your GitHub username and repository name after enabling GitHub Pages.
-
 ## Screenshots
 
 | Home Screen                          | Loading Screen                             |
