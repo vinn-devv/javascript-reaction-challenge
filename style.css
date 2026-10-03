@@ -3812,58 +3812,28 @@ body.no-effects .loading-ellipsis i {
   gap: 10px;
 }
 
+.difficulty-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+}
+
 .difficulty-name {
   min-width: 58px;
 
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-weight: 700;
+  font-size: 12px;
   letter-spacing: 0.1em;
-  text-align: right;
-  color: var(--level-color, var(--text-faint));
-
-  transition: color 0.3s ease;
-}
-
-.difficulty-bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 3px;
-  height: 18px;
-}
-
-.difficulty-bars .bar {
-  width: 5px;
-  border-radius: 1px;
-  background: rgba(255, 255, 255, 0.1);
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--level-color, var(--text-primary));
+  text-shadow: 0 0 var(--level-glow, 4px) var(--level-color, transparent);
 
   transition:
-    background 0.25s ease,
-    box-shadow 0.25s ease;
-}
-
-.difficulty-bars .bar:nth-child(1) {
-  height: 6px;
-}
-
-.difficulty-bars .bar:nth-child(2) {
-  height: 9px;
-}
-
-.difficulty-bars .bar:nth-child(3) {
-  height: 12px;
-}
-
-.difficulty-bars .bar:nth-child(4) {
-  height: 15px;
-}
-
-.difficulty-bars .bar:nth-child(5) {
-  height: 18px;
-}
-
-.difficulty-bars .bar.is-on {
-  background: var(--level-color);
-  box-shadow: 0 0 8px var(--level-color);
+    color 0.3s ease,
+    text-shadow 0.3s ease;
 }
 
 .difficulty.is-up {
@@ -3933,7 +3903,9 @@ body.no-effects .loading-ellipsis i {
 }
 
 .pause-btn:disabled {
-  opacity: 0.35;
+  opacity: 0.28;
+  filter: grayscale(0.6);
+  box-shadow: none;
   cursor: not-allowed;
 }
 
@@ -6131,7 +6103,8 @@ body.game-page .pause-btn:hover:not(:disabled) {
 }
 
 body.game-page .pause-btn:disabled {
-  opacity: 0.8;
+  opacity: 0.28;
+  filter: grayscale(0.6);
   cursor: default;
 }
 
@@ -6147,44 +6120,18 @@ body.game-page .difficulty {
   gap: 12px;
 }
 
+body.game-page .difficulty-label {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+
 body.game-page .difficulty-name {
   min-width: 0;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.14em;
   color: var(--level-color, #cdb4ff);
-}
-
-body.game-page .difficulty-bars {
-  gap: 4px;
-  height: 24px;
-}
-
-body.game-page .difficulty-bars .bar {
-  width: 7px;
-  background: rgba(150, 100, 235, 0.3);
-}
-
-body.game-page .difficulty-bars .bar:nth-child(1) {
-  height: 8px;
-}
-body.game-page .difficulty-bars .bar:nth-child(2) {
-  height: 12px;
-}
-body.game-page .difficulty-bars .bar:nth-child(3) {
-  height: 16px;
-}
-body.game-page .difficulty-bars .bar:nth-child(4) {
-  height: 20px;
-}
-body.game-page .difficulty-bars .bar:nth-child(5) {
-  height: 24px;
-}
-
-/* idle (READY) look: two lit bars, like the mockup */
-body.game-page .difficulty.is-ready .bar:nth-child(n + 4) {
-  background: #d9c2ff;
-  box-shadow: 0 0 10px rgba(199, 155, 255, 0.7);
+  text-shadow: 0 0 var(--level-glow, 4px) var(--level-color, transparent);
 }
 
 body.game-page .header-right {
@@ -6468,7 +6415,7 @@ body.game-page .start-btn:active {
     font-size: 11px;
   }
 
-  body.game-page .difficulty-name {
+  body.game-page .difficulty-label {
     display: none;
   }
 

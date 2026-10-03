@@ -49,7 +49,6 @@ const averageStat = averageScore ? averageScore.closest(".result-stat") : null;
 
 const difficultyEl = document.querySelector(".difficulty");
 const difficultyName = document.querySelector(".difficulty-name");
-const difficultyBarsEl = document.querySelector(".difficulty-bars");
 
 const pauseButton = document.querySelector(".pause-btn");
 const pauseScreen = document.querySelector("#pause-screen");
@@ -239,6 +238,19 @@ if (catCanvas && catSource) {
 
   if (!catSource.paused) {
     startCatLoop();
+  } else {
+    // belt-and-suspenders: don't rely solely on the autoplay attribute
+    catSource.play().catch(() => {
+      // autoplay blocked (rare, since it's muted) — start on first interaction
+      const resumeOnInteract = () => {
+        catSource.play().catch(() => {});
+      };
+
+      document.addEventListener("pointerdown", resumeOnInteract, {
+        once: true,
+      });
+      document.addEventListener("keydown", resumeOnInteract, { once: true });
+    });
   }
 }
 
@@ -558,20 +570,6 @@ if (roundDotsEl) {
   }
 }
 
-let difficultyBars = [];
-
-if (difficultyBarsEl) {
-  for (let i = 0; i < TOTAL_ROUNDS; i++) {
-    const bar = document.createElement("span");
-
-    bar.className = "bar";
-
-    difficultyBarsEl.appendChild(bar);
-
-    difficultyBars.push(bar);
-  }
-}
-
 function updateRoundDots(currentRound) {
   roundDots.forEach((dot, i) => {
     const dotRound = i + 1;
@@ -588,7 +586,8 @@ updateRoundDots(1);
 const difficulty = {
   1: {
     label: "EASY",
-    rgb: "192, 132, 252",
+    rgb: "255, 255, 255",
+    glow: "3px",
     minDelay: 1000,
     maxDelay: 3000,
     catSize: 96,
@@ -596,7 +595,8 @@ const difficulty = {
 
   2: {
     label: "NORMAL",
-    rgb: "168, 85, 247",
+    rgb: "255, 221, 189",
+    glow: "6px",
     minDelay: 800,
     maxDelay: 2500,
     catSize: 92,
@@ -604,7 +604,8 @@ const difficulty = {
 
   3: {
     label: "TRICKY",
-    rgb: "217, 70, 239",
+    rgb: "255, 164, 120",
+    glow: "10px",
     minDelay: 600,
     maxDelay: 2000,
     catSize: 88,
@@ -612,7 +613,8 @@ const difficulty = {
 
   4: {
     label: "HARD",
-    rgb: "244, 114, 182",
+    rgb: "255, 94, 74",
+    glow: "14px",
     minDelay: 400,
     maxDelay: 1500,
     catSize: 84,
@@ -620,7 +622,8 @@ const difficulty = {
 
   5: {
     label: "INSANE",
-    rgb: "251, 113, 133",
+    rgb: "255, 32, 32",
+    glow: "20px",
     minDelay: 250,
     maxDelay: 1000,
     catSize: 78,
@@ -642,10 +645,6 @@ function renderDifficulty(level) {
 
   const config = difficulty[level];
 
-  difficultyBars.forEach((bar, i) => {
-    bar.classList.toggle("is-on", i < level);
-  });
-
   difficultyName.textContent = config ? config.label : "READY";
 
   difficultyEl.classList.toggle("is-ready", !config);
@@ -654,6 +653,7 @@ function renderDifficulty(level) {
 
   if (config) {
     document.body.style.setProperty("--level-color", `rgb(${config.rgb})`);
+    document.body.style.setProperty("--level-glow", config.glow);
     document.body.style.setProperty(
       "--level-border",
       `rgba(${config.rgb}, 0.4)`,
@@ -756,7 +756,7 @@ function resetRun() {
   roundLive = false;
 
   renderComboBadge(0);
-  renderDifficulty(0);
+  renderDifficulty(1);
 
   if (scoreValue) {
     scoreValue.textContent = "0";
