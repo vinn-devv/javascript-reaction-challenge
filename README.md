@@ -1,64 +1,143 @@
-# Paw Reflex
 
-A pixel-art reaction-time game built with HTML, CSS, and JavaScript. Wait for the cat, click it as fast as you can, and survive all 5 rounds!
+<div align="center">
 
-## Live Demo
+# 🐾 Paw Reflex
 
-**[Play Paw Reflex](https://vinn-devv.github.io/javascript-reaction-challenge/homescreen.html)**
+### A Pixel-Art Reaction Time Game
 
-## Screenshots
+Test your reflexes. Chase the cat. Beat your best.
 
-| Home Screen                          | Loading Screen                             |
-| ------------------------------------ | ------------------------------------------ |
-| ![Home screen](screenshots/home.png) | ![Loading screen](screenshots/loading.png) |
+[![Play Demo](https://img.shields.io/badge/PLAY%20GAME-Paw%20Reflex-9B5DE5?style=for-the-badge&logo=github&logoColor=white)](https://vinn-devv.github.io/javascript-reaction-challenge/homescreen.html)
 
-| Gameplay                              | Results                             |
-| ------------------------------------- | ----------------------------------- |
-| ![Gameplay](screenshots/gameplay.png) | ![Results](screenshots/results.png) |
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
+![No Frameworks](https://img.shields.io/badge/Frameworks-None-6C757D?style=flat-square)
+![Status](https://img.shields.io/badge/Status-Playable-2EA44F?style=flat-square)
 
-## Features
+</div>
 
-- 5 rounds with progressively increasing difficulty
-- 3 difficulty modes: Easy, Normal, and Hard
-- Reaction-time scoring with combo multipliers
-- Results summary with average time, fastest reaction, accuracy, best streak, and round-by-round breakdown
-- 8 achievements to unlock
-- Personal records and statistics saved in the browser
-- Pause menu with restart and quit options
-- Settings for music, sound effects, and visual effects
-- Pixel-art visuals and an animated loading screen
-- Homescreen background music
+---
 
-## How to Play
+## 🎮 About the Game
 
-1. Choose a difficulty on the home screen and press **Play Now**.
-2. Press **Start the Round** and wait for the cat to appear.
-3. Click the cat as quickly as possible. Clicking too early counts as a miss.
-4. Complete all 5 rounds to see your results.
-5. Press **Esc** during a game to pause or resume.
+**Paw Reflex** is a browser-based reaction-time game featuring pixel-art visuals, an animated cat, and progressively challenging rounds.
 
-## Built With
+Wait for the cat to appear, click as quickly as possible, build combos, unlock achievements, and challenge your personal records.
 
-- HTML
-- CSS
-- JavaScript
-- Browser Local Storage
+> 🐱 Five rounds. Three difficulty modes. One goal: beat your best reaction time.
+
+## 📸 Screenshots
+
+<div align="center">
+
+### 🏠 Home Screen
+
+![Home Screen](screenshots/home.png)
+
+### ⏳ Loading Screen
+
+![Loading Screen](screenshots/loading.png)
+
+### 🎯 Gameplay
+
+![Gameplay](screenshots/gameplay.png)
+
+### 🏆 Results
+
+![Results](screenshots/results.png)
+
+</div>
+
+---
+
+## ✨ Features
+
+| Feature | Description |
+|:---|:---|
+| 🎯 **5 Rounds** | Complete five rounds of reaction challenges. |
+| ⚡ **3 Difficulty Modes** | Choose Easy, Normal, or Hard. |
+| 🔥 **Combo Multipliers** | Build combos and increase your score. |
+| 📊 **Detailed Statistics** | Track average time, fastest reaction, accuracy, and best streak. |
+| 🏅 **8 Achievements** | Unlock achievements through gameplay. |
+| 💾 **Personal Records** | Save your statistics in browser Local Storage. |
+| ⏸️ **Pause Menu** | Pause, restart, or quit a game. |
+| ⚙️ **Customizable Settings** | Control music, sound effects, and visual effects. |
+| 🎨 **Pixel-Art Visuals** | Enjoy pixel-inspired graphics and animated screens. |
+| 🎵 **Background Music** | Listen to music on the home screen. |
+
+---
+
+## 🕹️ How to Play
+
+1. Choose a difficulty: **Easy, Normal, or Hard**.
+2. Click **Play Now** to begin.
+3. Click **Start the Round** and wait for the cat.
+4. Click the cat as quickly as possible.
+5. Avoid clicking too early, as it counts as a miss.
+6. Complete all five rounds and review your results.
+
+**Controls**
+
+| Key / Action | Function |
+|:---|:---|
+| Mouse click | Hit the cat |
+| `Esc` | Pause or resume |
+
+---
+
+## 🛠️ Tech Stack
+
+<div align="center">
+
+| Technology | Purpose |
+|:---:|:---|
+| ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white) | Structure |
+| ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white) | Styling and animations |
+| ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black) | Game logic and interactions |
+| **Local Storage** | Persistent player statistics |
+
+</div>
 
 No external frameworks or libraries were used.
 
-## About the Developer
+---
 
-Hi! I'm **Renzo Cabaya**, a BSIT student specializing in Web Development and an aspiring Software Engineer.
+## 👨‍💻 About the Developer
 
-I built Paw Reflex as a personal project to practice and strengthen my skills in front-end web development, JavaScript, and interactive user interface design.
+Hi! I'm **Renzo Cabaya**, a BSIT student specializing in Web Development with the goal of becoming a Software Engineer.
 
-## Credits & Attributions
+I built Paw Reflex to practice and strengthen my skills in:
 
-This project uses third-party assets. They belong to their respective creators and are not claimed as original work by the developer.
+- Front-end web development
+- JavaScript and DOM manipulation
+- Game logic and event handling
+- Interactive user interface design
+- Browser Local Storage
 
-| Asset                 | Credit                                                                        |
-| --------------------- | ----------------------------------------------------------------------------- |
-| Apple Cat Loading GIF | Created by [@llla_gal](https://giphy.com/llla_gal/)                           |
-| Homescreen Music      | [Original track on YouTube](https://youtu.be/0QgRku9uvn8?si=h84uKzotMyEU8fJY) |
+I'm continuously learning, building projects, and improving my development skills.
+
+---
+
+## 🎨 Credits & Attributions
+
+This project uses third-party assets that belong to their respective creators.
+
+| Asset | Credit |
+|:---|:---|
+| Apple Cat Loading GIF | [@llla_gal on GIPHY](https://giphy.com/llla_gal/) |
+| Home Screen Music | [Original track on YouTube](https://youtu.be/0QgRku9uvn8?si=h84uKzotMyEU8fJY) |
 
 All rights to third-party assets remain with their respective creators.
+
+---
+
+<div align="center">
+
+**🐾 Thanks for checking out Paw Reflex!**
+
+[![Play Now](https://img.shields.io/badge/PLAY%20NOW-Paw%20Reflex-9B5DE5?style=for-the-badge)](https://vinn-devv.github.io/javascript-reaction-challenge/homescreen.html)
+
+<sub>Built with HTML, CSS, and JavaScript by Renzo Cabaya.</sub>
+
+</div>
